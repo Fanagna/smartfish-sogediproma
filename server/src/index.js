@@ -1,4 +1,8 @@
-require('dotenv').config();
+// ✅ NE CHARGER dotenv QUE SI ON EST EN LOCAL
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
@@ -27,6 +31,10 @@ if (missingVars.length > 0) {
 }
 
 const app = express();
+
+// ✅ AJOUTE CETTE LIGNE POUR RENDER
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 5000;
 
 // ─── HTTP Server + Socket.io ───
@@ -47,7 +55,7 @@ initSocketIO(io);
 // ─── Express Middleware ───
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000,                 // 1000 requêtes max (passé de 300 pour les dashboards)
+  max: 1000,
   message: 'Trop de requêtes depuis cette IP'
 });
 
@@ -56,6 +64,25 @@ app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
 app.use(limiter);
 app.use(morgan('combined'));
 app.use(express.json());
+
+// ✅ ROUTE RACINE (pour éviter le 404)
+app.get('/', (req, res) => {
+  res.json({
+    message: '🚀 SMARTFISH API est en ligne !',
+    status: 'OK',
+    version: '1.0.0',
+    environment: {
+      node: process.env.NODE_ENV || 'development',
+      hasDatabase: !!process.env.DATABASE_URL,
+      hasJWT: !!process.env.JWT_SECRET,
+      hasGemini: !!process.env.GEMINI_API_KEY
+    },
+    endpoints: {
+      health: '/api/health',
+      api: '/api'
+    }
+  });
+});
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'SMARTFISH API is running' });
