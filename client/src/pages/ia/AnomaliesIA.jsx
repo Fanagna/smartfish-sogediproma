@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { detectAnomaliesOperationnelles } from '../../services/iaService'
+import { getAnomalies, updateAnomalieStatus } from '../../services/anomalieService'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Spinner from '../../components/ui/Spinner'
@@ -8,7 +9,7 @@ import { FiAlertTriangle, FiSearch, FiInfo, FiCpu, FiClock, FiCheckCircle, FiChe
 import toast from 'react-hot-toast'
 
 const URGENCE = { BASSE: { label: 'Basse', color: 'bg-theme-card text-theme-secondary' }, MOYENNE: { label: 'Moyenne', color: 'bg-warning/10 text-warning' }, HAUTE: { label: 'Haute', color: 'bg-orange-100 text-orange-700' }, CRITIQUE: { label: 'Critique', color: 'bg-danger/10 text-danger' } }
-const STATUTS = { EN_ATTENTE: { label: 'En attente', color: 'bg-theme-card text-theme-secondary' }, EN_COURS: { label: 'En cours', color: 'bg-blue-100 text-blue-700' }, RESOLU: { label: 'Résolu', color: 'bg-success/10 text-success' } }
+const STATUTS = { EN_ATTENTE: { label: 'En attente', color: 'bg-theme-card text-theme-secondary' }, EN_COURS: { label: 'En cours', color: 'bg-blue-100 text-blue-700' }, TRAITE: { label: 'Résolu', color: 'bg-success/10 text-success' }, RESOLU: { label: 'Résolu', color: 'bg-success/10 text-success' } }
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
 const formatNumber = (v, d = 0) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: d }).format(v ?? 0)
@@ -18,21 +19,36 @@ export default function AnomaliesIA() {
   const [search, setSearch] = useState('')
   const [urgenceFilter, setUrgenceFilter] = useState('')
   const [statutFilter, setStatutFilter] = useState('')
-  const [anomaliesList, setAnomaliesList] = useState([])
   const limit = 15
+
+  // Load anomalies from database
+  const { data: anomaliesList = [], isLoading: isLoadingDb, refetch: refetchAnomalies } = useQuery({
+    queryKey: ['anomalies-ia'],
+    queryFn: () => getAnomalies(),
+    refetchInterval: 60000,
+  })
 
   const detectMutation = useMutation({
     mutationFn: detectAnomaliesOperationnelles,
     onSuccess: (data) => {
       const detected = data?.anomaliesDetectees || data?.anomalies || []
       if (detected.length > 0) {
-        setAnomaliesList(prev => [...detected.map(a => ({ ...a, date: new Date().toISOString(), statut: 'EN_ATTENTE' })), ...prev])
+        refetchAnomalies()
         toast.success(`${detected.length} anomalie(s) détectée(s)`)
       } else {
         toast.success('Aucune anomalie détectée')
       }
     },
     onError: (err) => toast.error(err.response?.data?.error || 'Erreur de détection')
+  })
+
+  const resolveMutation = useMutation({
+    mutationFn: (id) => updateAnomalieStatus(id, 'TRAITE'),
+    onSuccess: () => {
+      refetchAnomalies()
+      toast.success('Anomalie marquée comme résolue')
+    },
+    onError: (err) => toast.error(err.response?.data?.error || 'Erreur')
   })
 
   const filtered = anomaliesList.filter(a => {
@@ -44,11 +60,6 @@ export default function AnomaliesIA() {
 
   const paginated = filtered.slice((page - 1) * limit, page * limit)
   const totalPages = Math.ceil(filtered.length / limit)
-
-  const markResolu = (idx) => {
-    setAnomaliesList(prev => prev.map((a, i) => i === idx ? { ...a, statut: 'RESOLU' } : a))
-    toast.success('Anomalie marquée comme résolue')
-  }
 
   const counts = { BASSE: 0, MOYENNE: 0, HAUTE: 0, CRITIQUE: 0 }
   anomaliesList.forEach(a => { if (counts[a.urgence] !== undefined) counts[a.urgence]++ })
@@ -93,7 +104,7 @@ export default function AnomaliesIA() {
         </Card>
         <Card variant="glass" className="!p-4">
           <div className="p-2.5 bg-success/10 rounded-xl"><FiCheckCircle className="w-5 h-5 text-success" /></div>
-          <div><p className="text-xs text-theme-secondary font-medium">Résolues</p><p className="text-2xl font-bold text-success">{anomaliesList.filter(a => a.statut === 'RESOLU').length}</p></div>
+          <div><p className="text-xs text-theme-secondary font-medium">Résolues</p><p className="text-2xl font-bold text-success">{anomaliesList.filter(a => a.statut === 'TRAITE' || a.statut === 'RESOLU').length}</p></div>
         </Card>
       </div>
 
@@ -123,7 +134,6 @@ export default function AnomaliesIA() {
           {paginated.map((a, i) => {
             const urgStyle = URGENCE[a.urgence] || URGENCE.BASSE
             const statStyle = STATUTS[a.statut] || STATUTS.EN_ATTENTE
-            const realIdx = anomaliesList.indexOf(a)
             return (
               <Card key={i} variant="glass" className="!p-4">
                 <div className="flex items-start gap-4">
@@ -140,15 +150,22 @@ export default function AnomaliesIA() {
                     {a.details && <p className="text-xs text-theme-tertiary mt-1">{a.details}</p>}
                     <p className="text-[10px] text-theme-tertiary mt-1">{formatDate(a.date)}</p>
                   </div>
-                  {a.statut !== 'RESOLU' && (
-                    <button onClick={() => markResolu(realIdx)} className="p-2 text-success hover:bg-success/10 rounded-lg transition-all shrink-0" title="Marquer résolu">
-                      <FiCheckCircle className="w-5 h-5" />
+                  {a.statut !== 'TRAITE' && a.statut !== 'RESOLU' && (
+                    <button onClick={() => resolveMutation.mutate(a.id)} disabled={resolveMutation.isPending} className="p-2 text-success hover:bg-success/10 rounded-lg transition-all shrink-0" title="Marquer résolu">
+                      <FiCheckCircle className={`w-5 h-5 ${resolveMutation.isPending ? 'opacity-50' : ''}`} />
                     </button>
                   )}
                 </div>
               </Card>
             )
           })}
+        </div>
+      ) : isLoadingDb ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="flex flex-col items-center gap-3">
+            <Spinner className="w-10 h-10 border-danger" />
+            <p className="text-theme-secondary">Chargement des anomalies...</p>
+          </div>
         </div>
       ) : anomaliesList.length === 0 ? (
         <div className="text-center py-16">
