@@ -1,0 +1,15 @@
+{
+  "name": "smartfish-sogediproma",
+  "version": "1.0.0",
+  "description": "SMARTFISH SOGEDIPROMA - Plateforme de gestion de pêche intelligente",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev:server & npm run dev:client",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["smartfish", "sogediproma", "fisheries", "management"],
+  "author": "SMARTFISH Team",
+  "license": "MIT"
+}

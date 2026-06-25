@@ -1,0 +1,167 @@
+{
+	"info": {
+		"name": "SmartFish Sogediproma API",
+		"description": "Collection complète des endpoints API SmartFish Sogediproma\n\n## Authentification\n- La plupart des endpoints nécessitent un token JWT dans le header `Authorization: Bearer <token>`\n- Obtenez le token via `POST /api/auth/login`\n\n## Variables d'environnement Postman\n- `{{base_url}}` : http://localhost:5000/api\n- `{{token}}` : JWT token (set automatiquement après login)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "smartfish"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{ "key": "token", "value": "{{token}}", "type": "string" }
+		]
+	},
+	"variable": [
+		{ "key": "base_url", "value": "http://localhost:5000/api" },
+		{ "key": "token", "value": "" }
+	],
+	"item": [
+		{
+			"name": "🔐 Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"captaine@smartfish.sn\",\n  \"password\": \"password123\",\n  \"nom\": \"Diop\",\n  \"prenom\": \"Ibrahima\",\n  \"role\": \"CAPITAINE\"\n}"
+						},
+						"url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('token', jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@smartfish.sn\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+					}
+				},
+				{
+					"name": "Me (Profil)",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "⚓ Flotte",
+			"item": [
+				{ "name": "Liste bateaux", "request": { "method": "GET", "url": { "raw": "{{base_url}}/flotte", "host": ["{{base_url}}"], "path": ["flotte"] } } },
+				{ "name": "Détail bateau", "request": { "method": "GET", "url": { "raw": "{{base_url}}/flotte/1", "host": ["{{base_url}}"], "path": ["flotte", "1"] } } },
+				{ "name": "Créer bateau", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"nom\": \"Espadon\",\n  \"immatriculation\": \"SN-2024-005\",\n  \"type\": \"Pêche hauturière\",\n  \"longueur\": 18.5,\n  \"carburantCapacity\": 2000,\n  \"capitaineId\": 1\n}" }, "url": { "raw": "{{base_url}}/flotte", "host": ["{{base_url}}"], "path": ["flotte"] } } },
+				{ "name": "Modifier bateau", "request": { "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"nom\": \"Espadon II\",\n  \"longueur\": 20.0\n}" }, "url": { "raw": "{{base_url}}/flotte/1", "host": ["{{base_url}}"], "path": ["flotte", "1"] } } },
+				{ "name": "Supprimer bateau", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/flotte/1", "host": ["{{base_url}}"], "path": ["flotte", "1"] } } },
+				{ "name": "Utiliser carburant", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"quantite\": 100\n}" }, "url": { "raw": "{{base_url}}/flotte/1/carburant/utiliser", "host": ["{{base_url}}"], "path": ["flotte", "1", "carburant", "utiliser"] } } },
+				{ "name": "Remplir carburant", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"quantite\": 500\n}" }, "url": { "raw": "{{base_url}}/flotte/1/carburant/remplir", "host": ["{{base_url}}"], "path": ["flotte", "1", "carburant", "remplir"] } } }
+			]
+		},
+		{
+			"name": "🎣 Captures",
+			"item": [
+				{ "name": "Liste captures", "request": { "method": "GET", "url": { "raw": "{{base_url}}/captures?page=1&limit=10", "host": ["{{base_url}}"], "path": ["captures"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}] } } },
+				{ "name": "Liste avec filtres", "request": { "method": "GET", "url": { "raw": "{{base_url}}/captures?espece=Thon&bateauId=1&dateDebut=2024-01-01&dateFin=2024-12-31", "host": ["{{base_url}}"], "path": ["captures"], "query": [{"key": "espece", "value": "Thon"}, {"key": "bateauId", "value": "1"}, {"key": "dateDebut", "value": "2024-01-01"}, {"key": "dateFin", "value": "2024-12-31"}] } } },
+				{ "name": "Stats 30 jours", "request": { "method": "GET", "url": { "raw": "{{base_url}}/captures/stats", "host": ["{{base_url}}"], "path": ["captures", "stats"] } } },
+				{ "name": "Stats mensuelles", "request": { "method": "GET", "url": { "raw": "{{base_url}}/captures/stats/mensuelles", "host": ["{{base_url}}"], "path": ["captures", "stats", "mensuelles"] } } },
+				{ "name": "Détail capture", "request": { "method": "GET", "url": { "raw": "{{base_url}}/captures/1", "host": ["{{base_url}}"], "path": ["captures", "1"] } } },
+				{ "name": "Créer capture", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"bateauId\": 1,\n  \"espece\": \"Thon rouge\",\n  \"poids\": 150.5,\n  \"quantite\": 10,\n  \"zonePeche\": \"Zone A\",\n  \"profondeur\": 120,\n  \"temperature\": 22.5\n}" }, "url": { "raw": "{{base_url}}/captures", "host": ["{{base_url}}"], "path": ["captures"] } } },
+				{ "name": "Modifier capture", "request": { "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"poids\": 160.0,\n  \"quantite\": 12\n}" }, "url": { "raw": "{{base_url}}/captures/1", "host": ["{{base_url}}"], "path": ["captures", "1"] } } },
+				{ "name": "Supprimer capture", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/captures/1", "host": ["{{base_url}}"], "path": ["captures", "1"] } } },
+				{ "name": "Import CSV", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"captures\": [\n    {\"bateauId\": 1, \"espece\": \"Sardine\", \"poids\": 200, \"quantite\": 500, \"zonePeche\": \"Zone C\", \"date\": \"2024-06-01\"},\n    {\"bateauId\": 2, \"espece\": \"Maquereau\", \"poids\": 150, \"quantite\": 300, \"zonePeche\": \"Zone A\"}\n  ]\n}" }, "url": { "raw": "{{base_url}}/captures/import", "host": ["{{base_url}}"], "path": ["captures", "import"] } } }
+			]
+		},
+		{
+			"name": "📦 Stocks",
+			"item": [
+				{ "name": "Liste stocks", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stocks", "host": ["{{base_url}}"], "path": ["stocks"] } } },
+				{ "name": "Détail stock", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stocks/1", "host": ["{{base_url}}"], "path": ["stocks", "1"] } } },
+				{ "name": "Créer stock", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"bateauId\": 1,\n  \"espece\": \"Thon rouge\",\n  \"quantite\": 500,\n  \"unite\": \"kg\",\n  \"seuil\": 50\n}" }, "url": { "raw": "{{base_url}}/stocks", "host": ["{{base_url}}"], "path": ["stocks"] } } },
+				{ "name": "Stocks en rupture", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stocks/intelligence/rupture", "host": ["{{base_url}}"], "path": ["stocks", "intelligence", "rupture"] } } },
+				{ "name": "Stocks en surstock", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stocks/intelligence/surstock", "host": ["{{base_url}}"], "path": ["stocks", "intelligence", "surstock"] } } },
+				{ "name": "Recommandation achat IA", "request": { "method": "POST", "url": { "raw": "{{base_url}}/stocks/intelligence/recommendation", "host": ["{{base_url}}"], "path": ["stocks", "intelligence", "recommendation"] } } },
+				{ "name": "Rotation FIFO", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stocks/intelligence/rotation", "host": ["{{base_url}}"], "path": ["stocks", "intelligence", "rotation"] } } },
+				{ "name": "Alertes critiques", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stocks/intelligence/critiques", "host": ["{{base_url}}"], "path": ["stocks", "intelligence", "critiques"] } } }
+			]
+		},
+		{
+			"name": "🛒 Ventes & Achats",
+			"item": [
+				{ "name": "Liste ventes", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ventes", "host": ["{{base_url}}"], "path": ["ventes"] } } },
+				{ "name": "Créer vente", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"stockId\": 1,\n  \"espece\": \"Thon rouge\",\n  \"quantite\": 50,\n  \"prixUnitaire\": 15.0,\n  \"typeClient\": \"RESTAURANT\"\n}" }, "url": { "raw": "{{base_url}}/ventes", "host": ["{{base_url}}"], "path": ["ventes"] } } },
+				{ "name": "Liste achats", "request": { "method": "GET", "url": { "raw": "{{base_url}}/achats", "host": ["{{base_url}}"], "path": ["achats"] } } },
+				{ "name": "Créer achat", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"fournisseur\": \"Fournisseur SA\",\n  \"espece\": \"Cabillaud\",\n  \"quantite\": 200,\n  \"prixUnitaire\": 8.5,\n  \"notes\": \"Livraison prévue le 15/06\"\n}" }, "url": { "raw": "{{base_url}}/achats", "host": ["{{base_url}}"], "path": ["achats"] } } }
+			]
+		},
+		{
+			"name": "🌍 Exportations",
+			"item": [
+				{ "name": "Liste exportations", "request": { "method": "GET", "url": { "raw": "{{base_url}}/exportations", "host": ["{{base_url}}"], "path": ["exportations"] } } },
+				{ "name": "Créer exportation", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"stockId\": 1,\n  \"espece\": \"Thon rouge\",\n  \"quantite\": 100,\n  \"paysDestination\": \"Japon\",\n  \"prixTotal\": 5000,\n  \"statut\": \"EN_ATTENTE\"\n}" }, "url": { "raw": "{{base_url}}/exportations", "host": ["{{base_url}}"], "path": ["exportations"] } } }
+			]
+		},
+		{
+			"name": "👥 Clients",
+			"item": [
+				{ "name": "Liste clients", "request": { "method": "GET", "url": { "raw": "{{base_url}}/clients", "host": ["{{base_url}}"], "path": ["clients"] } } },
+				{ "name": "Créer client", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"nom\": \"Restaurant La Mer\",\n  \"email\": \"contact@restaurantlamer.sn\",\n  \"telephone\": \"+221 77 123 45 67\",\n  \"adresse\": \"Dakar, Sénégal\",\n  \"type\": \"RESTAURANT\"\n}" }, "url": { "raw": "{{base_url}}/clients", "host": ["{{base_url}}"], "path": ["clients"] } } }
+			]
+		},
+		{
+			"name": "⚠️ Anomalies",
+			"item": [
+				{ "name": "Liste anomalies", "request": { "method": "GET", "url": { "raw": "{{base_url}}/anomalies", "host": ["{{base_url}}"], "path": ["anomalies"] } } },
+				{ "name": "Créer anomalie", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"description\": \"Fuite d'huile moteur détectée\",\n  \"type\": \"MAINTENANCE\",\n  \"urgence\": \"HAUTE\"\n}" }, "url": { "raw": "{{base_url}}/anomalies", "host": ["{{base_url}}"], "path": ["anomalies"] } } },
+				{ "name": "Modifier anomalie", "request": { "method": "PUT", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"statut\": \"RESOLU\"\n}" }, "url": { "raw": "{{base_url}}/anomalies/1", "host": ["{{base_url}}"], "path": ["anomalies", "1"] } } }
+			]
+		},
+		{
+			"name": "🧠 Intelligence Artificielle",
+			"item": [
+				{ "name": "IA3 — Prédictions captures", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/predictions", "host": ["{{base_url}}"], "path": ["ia", "predictions"] } } },
+				{ "name": "IA7 — Zones de pêche", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/zones", "host": ["{{base_url}}"], "path": ["ia", "zones"] } } },
+				{ "name": "IA4 — Maintenance prédictive", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/flotte/maintenance/predict", "host": ["{{base_url}}"], "path": ["ia", "flotte", "maintenance", "predict"] } } },
+				{ "name": "IA5 — Prévisions ventes", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/ventes/predict", "host": ["{{base_url}}"], "path": ["ia", "ventes", "predict"] } } },
+				{ "name": "IA6 — Prévisions export", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/exportations/predict", "host": ["{{base_url}}"], "path": ["ia", "exportations", "predict"] } } },
+				{ "name": "IA1 — Analyse globale", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/analyse-globale", "host": ["{{base_url}}"], "path": ["ia", "analyse-globale"] } } },
+				{ "name": "IA2 — Chatbot", "request": { "method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": { "mode": "raw", "raw": "{\n  \"question\": \"Quelle est la santé financière de l'entreprise ?\",\n  \"history\": []\n}" }, "url": { "raw": "{{base_url}}/ia/chat", "host": ["{{base_url}}"], "path": ["ia", "chat"] } } },
+				{ "name": "IA8 — Optimisation flotte", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/flotte/optimiser", "host": ["{{base_url}}"], "path": ["ia", "flotte", "optimiser"] } } },
+				{ "name": "IA14 — Recommandations DG", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/recommandations-strategiques", "host": ["{{base_url}}"], "path": ["ia", "recommandations-strategiques"] } } },
+				{ "name": "IA9 — Détection anomalies", "request": { "method": "POST", "url": { "raw": "{{base_url}}/ia/anomalies-operationnelles/detecter", "host": ["{{base_url}}"], "path": ["ia", "anomalies-operationnelles", "detecter"] } } },
+				{ "name": "IA10 — Détection fraude", "request": { "method": "POST", "url": { "raw": "{{base_url}}/ia/fraude/detecter", "host": ["{{base_url}}"], "path": ["ia", "fraude", "detecter"] } } },
+				{ "name": "IA12 — Analyse risques", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/risques/analyser", "host": ["{{base_url}}"], "path": ["ia", "risques", "analyser"] } } },
+				{ "name": "IA13 — Générer rapport journalier", "request": { "method": "POST", "url": { "raw": "{{base_url}}/ia/rapports/generer?type=journalier", "host": ["{{base_url}}"], "path": ["ia", "rapports", "generer"], "query": [{"key": "type", "value": "journalier"}] } } },
+				{ "name": "IA13 — Générer rapport hebdomadaire", "request": { "method": "POST", "url": { "raw": "{{base_url}}/ia/rapports/generer?type=hebdomadaire", "host": ["{{base_url}}"], "path": ["ia", "rapports", "generer"], "query": [{"key": "type", "value": "hebdomadaire"}] } } },
+				{ "name": "IA13 — Générer rapport mensuel", "request": { "method": "POST", "url": { "raw": "{{base_url}}/ia/rapports/generer?type=mensuel", "host": ["{{base_url}}"], "path": ["ia", "rapports", "generer"], "query": [{"key": "type", "value": "mensuel"}] } } },
+				{ "name": "Recommandations générales", "request": { "method": "GET", "url": { "raw": "{{base_url}}/ia/recommandations", "host": ["{{base_url}}"], "path": ["ia", "recommandations"] } } }
+			]
+		},
+		{
+			"name": "📊 Stats & Health",
+			"item": [
+				{ "name": "Health check", "request": { "method": "GET", "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] } } },
+				{ "name": "Stats commerciales", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stats/commercial", "host": ["{{base_url}}"], "path": ["stats", "commercial"] } } },
+				{ "name": "Stats durabilité", "request": { "method": "GET", "url": { "raw": "{{base_url}}/stats/durabilite", "host": ["{{base_url}}"], "path": ["stats", "durabilite"] } } }
+			]
+		}
+	]
+}

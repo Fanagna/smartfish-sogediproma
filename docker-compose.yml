@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # ─── PostgreSQL Database ───
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartfish-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smartfish
+      POSTGRES_PASSWORD: smartfish123
+      POSTGRES_DB: smartfish
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartfish"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── API Server (Express + Prisma) ───
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: smartfish-server
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://smartfish:smartfish123@postgres:5432/smartfish
+      JWT_SECRET: ${JWT_SECRET:-smartfish-jwt-secret-change-in-production}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CLIENT_URL: http://localhost:5173
+    ports:
+      - "5000:5000"
+    volumes:
+      - server_logs:/app/logs
+
+  # ─── Client (Vite + React) ───
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: smartfish-client
+    restart: unless-stopped
+    depends_on:
+      - server
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data:
+  server_logs:

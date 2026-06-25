@@ -1,0 +1,339 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CAPITAINE
+  OBSERVATEUR
+}
+
+enum Urgence {
+  BASSE
+  MOYENNE
+  HAUTE
+  CRITIQUE
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  nom       String
+  prenom    String
+  role      Role     @default(OBSERVATEUR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bateaux      Bateau[]
+  captures     Capture[]
+  anomalies    Anomalie[]
+  maintenance  Maintenance[]
+  ventes       Vente[]
+  exportations Exportation[]
+  rapports     Rapport[]
+  fraudes      Fraude[]
+  achats       Achat[]
+  clients      Client[]
+  ordresMission OrdreMission[]
+  notifications Notification[]
+}
+
+model Bateau {
+  id                Int       @id @default(autoincrement())
+  nom               String
+  immatriculation   String    @unique
+  type              String
+  longueur          Float
+  carburantCapacity Float     @default(500.0)
+  carburantRestant  Float     @default(500.0)
+  consoHoraire      Float?    // Consommation horaire (L/h) — saisie réelle du capitaine
+  capitaineId       Int
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  capitaine   User      @relation(fields: [capitaineId], references: [id])
+  captures    Capture[]
+  stocks      Stock[]
+  maintenance Maintenance[]
+  ravitaillements Ravitaillement[]
+}
+
+model Ravitaillement {
+  id        Int      @id @default(autoincrement())
+  bateauId  Int
+  date      DateTime @default(now())
+  litres    Float
+  prixLitre Float    @default(4800)
+  coutTotal Float    // litres × prixLitre
+  fournisseur String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  bateau    Bateau   @relation(fields: [bateauId], references: [id])
+
+  @@index([bateauId])
+  @@index([date])
+}
+
+model Capture {
+  id           Int       @id @default(autoincrement())
+  bateauId     Int
+  userId       Int
+  date         DateTime  @default(now())
+  espece       String
+  poids        Float
+  quantite     Int
+  zonePeche    String
+  profondeur   Float?
+  temperature  Float?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  bateau       Bateau    @relation(fields: [bateauId], references: [id])
+  user         User      @relation(fields: [userId], references: [id])
+  stocks       Stock[]
+
+  @@index([date])
+  @@index([espece])
+  @@index([bateauId])
+  @@index([zonePeche])
+}
+
+model Stock {
+  id         Int       @id @default(autoincrement())
+  bateauId   Int
+  captureId  Int?
+  espece     String
+  quantite   Float
+  unite      String
+  seuil      Float     @default(50.0)
+  alerte     Boolean   @default(false)
+  prixVente  Float?    @default(0)
+  dateEntree DateTime  @default(now())
+  dateSortie DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  bateau     Bateau    @relation(fields: [bateauId], references: [id])
+  capture    Capture?  @relation(fields: [captureId], references: [id])
+  ventes     Vente[]
+  exportations Exportation[]
+
+  @@index([espece])
+  @@index([dateSortie])
+  @@index([bateauId])
+}
+
+model Maintenance {
+  id          Int       @id @default(autoincrement())
+  bateauId    Int
+  userId      Int
+  type        String
+  description String
+  date        DateTime
+  statut      String
+  cout        Float?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  bateau      Bateau    @relation(fields: [bateauId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model DecisionLog {
+  id        Int      @id @default(autoincrement())
+  contenu   String
+  contexte  String?
+  date      DateTime @default(now())
+  type      String   @default("RECOMMENDATION")
+  createdAt DateTime @default(now())
+}
+
+model Anomalie {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  description String
+  type        String
+  urgence     Urgence  @default(MOYENNE)
+  statut      String   @default("EN_ATTENTE")
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([date])
+  @@index([statut])
+  @@index([urgence])
+}
+
+model Vente {
+  id          Int       @id @default(autoincrement())
+  stockId     Int?
+  clientId    Int?
+  userId      Int
+  date        DateTime  @default(now())
+  espece      String
+  quantite    Float
+  prixUnitaire Float
+  total       Float
+  typeClient  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  stock       Stock?    @relation(fields: [stockId], references: [id])
+  client      Client?   @relation(fields: [clientId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([date])
+  @@index([espece])
+}
+
+model Exportation {
+  id          Int       @id @default(autoincrement())
+  stockId     Int?
+  clientId    Int?
+  userId      Int
+  date        DateTime  @default(now())
+  espece      String
+  quantite    Float
+  paysDestination String
+  prixTotal   Float
+  statut      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  stock       Stock?    @relation(fields: [stockId], references: [id])
+  client      Client?   @relation(fields: [clientId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([date])
+  @@index([paysDestination])
+}
+
+model Rapport {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  type        String   // journalier, hebdomadaire, mensuel
+  titre       String
+  contenu     String
+  dateDebut   DateTime
+  dateFin     DateTime
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Fraude {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  description String
+  type        String   // declaration_incoherente, ecart_stock, transaction_suspecte
+  niveauRisque String // faible, moyen, eleve, critique
+  statut      String   // en_attente, en_cours, resolu
+  donneesConcernees String // JSON ou texte avec détails
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Achat {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  clientId    Int?
+  fournisseur String
+  espece      String
+  quantite    Float
+  prixUnitaire Float
+  total       Float
+  notes       String?
+  date        DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id])
+  client      Client?   @relation(fields: [clientId], references: [id])
+}
+
+model Client {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  nom         String
+  email       String?
+  telephone   String?
+  adresse     String?
+  type        String
+  totalAchats Float    @default(0)
+  nbCommandes Int      @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id])
+  ventes   Vente[]
+  exportations Exportation[]
+  achats   Achat[]
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  message   String
+  type      String   @default("info")
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model OrdreMission {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  numero    String
+  date      DateTime @default(now())
+
+  // Mission details
+  bateauNom     String
+  bateauType    String
+  objetMission  String
+  destination   String
+  chefMission   String
+  capitaine     String
+  equipage      Json     @default("[]") // [{ nom, fonction, montantUnitaire, nombreJours, total }]
+
+  // Departure/Arrival
+  dateDepart   DateTime
+  dateArrivee  DateTime
+  heureDepart  String
+  heureArrivee String
+
+  // Vidange (oil change)
+  vidangeDate      DateTime?
+  vidangeTotal     Float?
+  vidangeProchaine  Float?
+
+  // Carburant (fuel)
+  carburantRestant     Float?
+  carburantRemplissage Float?
+  carburantDepart      Float?
+  carburantConsommation Float?
+  carburantArrivee     Float?
+
+  // Marchandises (goods) & Passagers
+  marchandises Json  @default("[]") // [{ designation, quantite, unite, observation }]
+  passagers    Json  @default("[]") // [{ nom, cin, fonction }]
+  diversFrais  Json  @default("[]") // [{ designation, montant }]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
