@@ -37,11 +37,27 @@ app.set('trust proxy', 1);
 
 const PORT = process.env.PORT || 5000;
 
+// ─── CORS multi-origines ───
+const rawClientUrls = process.env.CLIENT_URL || 'http://localhost:5173';
+const CLIENT_URLS = rawClientUrls.split(',').map(u => u.trim());
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (CLIENT_URLS.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Non autorisé par CORS'));
+    }
+  },
+  credentials: true
+};
+
 // ─── HTTP Server + Socket.io ───
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: CLIENT_URLS,
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -60,7 +76,7 @@ const limiter = rateLimit({
 });
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+app.use(cors(corsOptions));
 app.use(limiter);
 app.use(morgan('combined'));
 app.use(express.json());
