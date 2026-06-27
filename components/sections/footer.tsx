@@ -26,7 +26,7 @@ export function Footer() {
     {
       title: 'Connexion',
       links: [
-        { label: 'GitHub', href: 'https://github.com/robertfanagna' },
+        { label: 'GitHub', href: 'https://github.com/Fanagna' },
         { label: 'LinkedIn', href: 'https://linkedin.com/in/robertfanagna' },
         { label: 'Email', href: 'mailto:robertfanagna374@gmail.com' },
       ],

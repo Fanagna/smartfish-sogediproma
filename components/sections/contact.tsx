@@ -100,7 +100,7 @@ export function Contact() {
                   <p className="text-sm text-foreground/60">Suivez-moi sur les réseaux</p>
                   <div className="flex gap-4">
                     {[
-                      { name: 'GitHub', link: 'https://github.com/robertfanagna', icon: '🐙' },
+                      { name: 'GitHub', link: 'https://github.com/Fanagna', icon: '🐙' },
                       { name: 'LinkedIn', link: 'https://linkedin.com/in/robertfanagna', icon: '💼' },
                       { name: 'Twitter', link: 'https://twitter.com', icon: '𝕏' },
                       { name: 'Email', link: 'mailto:robertfanagna374@gmail.com', icon: '✉️' },

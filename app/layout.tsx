@@ -33,23 +33,6 @@ export const metadata: Metadata = {
     description:
       'Portfolio premium - Expert en architecture logicielle, gouvernance SI et transformation digitale',
   },
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
 }
 
 export const viewport: Viewport = {
@@ -95,7 +78,7 @@ export default function RootLayout({
       'Systèmes d\'Information',
     ],
     sameAs: [
-      'https://github.com/robertfanagna',
+      'https://github.com/Fanagna',
       'https://linkedin.com/in/robertfanagna',
     ],
   }
