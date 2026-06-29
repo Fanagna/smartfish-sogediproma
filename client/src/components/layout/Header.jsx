@@ -8,8 +8,6 @@ import { connectSocket, disconnectSocket } from '../../services/socket'
 import ProfileModal from './ProfileModal'
 import SettingsModal from './SettingsModal'
 import NotificationPanel from './NotificationPanel'
-import toast from 'react-hot-toast'
-
 export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
   const { user, logout, token } = useAuth()
   const { mode, toggleMode } = useThemeStore()
@@ -21,8 +19,6 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const [socketConnected, setSocketConnected] = useState(false)
-  const isReady = useRef(false)
-  const toastThrottle = useRef(false)
 
   const { data: notifData } = useQuery({
     queryKey: ['notifications-header'],
@@ -47,33 +43,9 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
     const handleConnectError = () => setSocketConnected(false)
 
     const handleNewNotification = (notification) => {
-      // Ignorer les notifications si le composant n'est pas encore prêt
-      if (!isReady.current) {
-        console.log('[Header] Notification ignorée (composant pas encore prêt):', notification.id)
-        return
-      }
-
-      // Invalider les caches React Query pour forcer le rafraîchissement
+      // Invalider les caches React Query pour rafraîchir le compteur de notifications
       queryClient.invalidateQueries({ queryKey: ['notifications-header'] })
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
-
-      // Throttle toast : max 1 toast toutes les 800ms pour éviter les conflits DOM
-      if (toastThrottle.current) return
-      toastThrottle.current = true
-      setTimeout(() => { toastThrottle.current = false }, 800)
-
-      // Toast avec le message
-      const typeStyles = {
-        info: { icon: 'ℹ️' },
-        success: { icon: '✅' },
-        warning: { icon: '⚠️' },
-        error: { icon: '🚨' }
-      }
-      const style = typeStyles[notification.type] || typeStyles.info
-      toast(`${style.icon} ${notification.message}`, {
-        duration: 5000,
-        position: 'top-right',
-      })
     }
 
     socket.on('connect', handleConnect)
