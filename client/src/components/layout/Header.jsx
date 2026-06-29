@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { FiBell, FiUser, FiChevronDown, FiLogOut, FiSettings, FiSun, FiMoon, FiMenu } from 'react-icons/fi'
 import { useAuth } from '../../hooks/useAuth'
@@ -21,6 +21,7 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const [socketConnected, setSocketConnected] = useState(false)
+  const isReady = useRef(false)
 
   const { data: notifData } = useQuery({
     queryKey: ['notifications-header'],
@@ -28,6 +29,12 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
     refetchInterval: socketConnected ? 60000 : 15000
   })
   const unreadCount = notifData?.unreadCount || 0
+
+  // ─── Marquer le composant comme prêt après le premier rendu ───
+  useEffect(() => {
+    isReady.current = true
+    return () => { isReady.current = false }
+  }, [])
 
   // ─── Connexion WebSocket temps réel ───
   useEffect(() => {
@@ -39,6 +46,12 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
     const handleConnectError = () => setSocketConnected(false)
 
     const handleNewNotification = (notification) => {
+      // Ignorer les notifications si le composant n'est pas encore prêt
+      if (!isReady.current) {
+        console.log('[Header] Notification ignorée (composant pas encore prêt):', notification.id)
+        return
+      }
+
       // Invalider les caches React Query pour forcer le rafraîchissement
       queryClient.invalidateQueries({ queryKey: ['notifications-header'] })
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
@@ -71,7 +84,7 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
       socket.off('connect_error', handleConnectError)
       socket.off('notification:new', handleNewNotification)
     }
-  }, [token, queryClient])
+  }, [token])
 
   // Nettoyage à la déconnexion
   useEffect(() => {
