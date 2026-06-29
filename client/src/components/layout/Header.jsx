@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FiBell, FiUser, FiChevronDown, FiLogOut, FiSettings, FiSun, FiMoon } from 'react-icons/fi'
+import { FiBell, FiUser, FiChevronDown, FiLogOut, FiSettings, FiSun, FiMoon, FiMenu } from 'react-icons/fi'
 import { useAuth } from '../../hooks/useAuth'
 import { useThemeStore } from '../../stores/themeStore'
 import { getNotifications } from '../../services/notificationService'
@@ -10,7 +10,7 @@ import SettingsModal from './SettingsModal'
 import NotificationPanel from './NotificationPanel'
 import toast from 'react-hot-toast'
 
-export default function Header() {
+export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
   const { user, logout, token } = useAuth()
   const { mode, toggleMode } = useThemeStore()
   const queryClient = useQueryClient()
@@ -116,8 +116,19 @@ export default function Header() {
           borderBottom: '1px solid var(--border-default)',
           boxShadow: 'var(--shadow-card)',
         }}>
-      {/* Left: Logo + Date */}
-      <div className="flex items-center gap-6">
+      {/* Left: Hamburger + Logo + Date */}
+      <div className="flex items-center gap-3">
+        {/* Hamburger menu - visible on tablet & mobile */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden p-2 rounded-xl transition-all duration-300 hover:bg-black/5 dark:hover:bg-white/10"
+          style={{ color: 'var(--text-tertiary)' }}
+          aria-label="Ouvrir le menu"
+          aria-expanded={sidebarOpen}
+        >
+          <FiMenu className="w-5 h-5" />
+        </button>
+
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
             <span className="text-white font-bold text-sm">SF</span>
