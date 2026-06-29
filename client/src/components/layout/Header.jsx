@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { FiBell, FiUser, FiChevronDown, FiLogOut, FiSettings, FiSun, FiMoon, FiMenu } from 'react-icons/fi'
 import { useAuth } from '../../hooks/useAuth'
@@ -26,12 +26,6 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
     refetchInterval: socketConnected ? 60000 : 15000
   })
   const unreadCount = notifData?.unreadCount || 0
-
-  // ─── Marquer le composant comme prêt après le premier rendu ───
-  useEffect(() => {
-    isReady.current = true
-    return () => { isReady.current = false }
-  }, [])
 
   // ─── Connexion WebSocket temps réel ───
   useEffect(() => {
