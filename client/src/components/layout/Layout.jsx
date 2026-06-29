@@ -3,25 +3,20 @@ import Sidebar from './Sidebar'
 import Header from './Header'
 
 export default function Layout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
 
   useEffect(() => {
-    // Initialize based on screen size
     const handleResize = () => {
       const mobile = window.innerWidth < 1024
       setIsMobile(mobile)
-      // Auto-close sidebar when resizing to mobile
       if (mobile) {
         setSidebarOpen(false)
       } else {
         setSidebarOpen(true)
       }
     }
-
-    // Set initial state
     handleResize()
-
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])

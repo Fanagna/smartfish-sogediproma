@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { FiHome, FiDroplet, FiAnchor, FiTrendingUp, FiAlertTriangle,
+import {
+  FiHome, FiDroplet, FiAnchor, FiTrendingUp, FiAlertTriangle,
   FiZap, FiCpu, FiGrid, FiShield, FiGlobe, FiUsers, FiShoppingCart,
   FiChevronDown, FiChevronRight, FiMessageCircle, FiSearch, FiClock,
   FiNavigation, FiTarget, FiDollarSign, FiFile, FiStar, FiPackage, FiMapPin, FiFileText,
-  FiUserCheck, FiX
+  FiUserCheck, FiX, FiChevronLeft
 } from 'react-icons/fi'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -19,14 +20,22 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
     }
   }, [location.pathname])
 
+  // ─── Reset IA expanded when collapsing ───
+  useEffect(() => {
+    if (!isMobile && !sidebarOpen) {
+      setIaExpanded(false)
+    }
+  }, [isMobile, sidebarOpen])
+
+  // ─── Navigation data ───
   const links = [
-    { to: '/dashboard', icon: FiHome, label: 'Dashboard', color: 'from-primary to-accent' },
-    { to: '/dashboard-executif-avance', icon: FiZap, label: 'Exécutif+', roles: ['ADMIN'], color: 'from-warning to-orange-500' },
-    { to: '/dashboard-ia', icon: FiCpu, label: 'IA & Analytics', color: 'from-purple-500 to-pink-500' },
-    { to: '/dashboard-commercial', icon: FiShoppingCart, label: 'Commercial', roles: ['ADMIN', 'CAPITAINE'], color: 'from-success to-emerald-500' },
-    { to: '/dashboard-durabilite', icon: FiShield, label: 'Durabilité', roles: ['ADMIN'], color: 'from-emerald-400 to-teal-500' },
-    { to: '/dashboard-export', icon: FiGlobe, label: 'Export', roles: ['ADMIN'], color: 'from-cyan-400 to-blue-500' },
-    { to: '/dashboard-operationnel', icon: FiGrid, label: 'Opérationnel', color: 'from-primary-dark to-primary' },
+    { to: '/dashboard', icon: FiHome, label: 'Dashboard' },
+    { to: '/dashboard-executif-avance', icon: FiZap, label: 'Exécutif+', roles: ['ADMIN'] },
+    { to: '/dashboard-ia', icon: FiCpu, label: 'IA & Analytics' },
+    { to: '/dashboard-commercial', icon: FiShoppingCart, label: 'Commercial', roles: ['ADMIN', 'CAPITAINE'] },
+    { to: '/dashboard-durabilite', icon: FiShield, label: 'Durabilité', roles: ['ADMIN'] },
+    { to: '/dashboard-export', icon: FiGlobe, label: 'Export', roles: ['ADMIN'] },
+    { to: '/dashboard-operationnel', icon: FiGrid, label: 'Opérationnel' },
   ]
 
   const secondaryLinks = [
@@ -67,8 +76,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
     !link.roles || link.roles.includes(user?.role)
   )
 
-  // ─── Sidebar Content (reused in both desktop and mobile) ───
-  const sidebarContent = (
+  // ─── Desktop: Collapsed mode (icons only) ───
+  const renderDesktopCollapsed = () => (
     <div
       className="flex flex-col h-full backdrop-blur-xl border-r transition-all duration-300"
       style={{
@@ -76,9 +85,111 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
         borderColor: 'var(--border-default)',
       }}
     >
-      {/* Logo + Close button (mobile only) */}
-      <div className="flex-shrink-0 p-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border-default)' }}>
-        <div className="flex items-center gap-3 min-w-0">
+      {/* Logo - just the icon */}
+      <div className="flex-shrink-0 flex justify-center py-4 border-b" style={{ borderColor: 'var(--border-default)' }}>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+          <span className="text-white font-extrabold text-base">SF</span>
+        </div>
+      </div>
+
+      {/* Navigation - Scrollable, icons only */}
+      <nav className="flex-1 overflow-y-auto overscroll-contain py-3 space-y-1 flex flex-col items-center">
+        {filteredLinks.map((link) => {
+          const isActive = location.pathname === link.to
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              title={link.label}
+              className={`sidebar-link group relative flex items-center justify-center w-[44px] h-[44px] rounded-xl ${isActive ? 'sidebar-link-active' : ''}`}
+              style={{ color: isActive ? undefined : 'var(--text-tertiary)' }}
+            >
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
+                  style={{ backgroundColor: 'var(--color-primary)' }} />
+              )}
+              <div className="sidebar-icon" style={{ backgroundColor: isActive ? undefined : 'transparent' }}>
+                <link.icon className="w-5 h-5" />
+              </div>
+              {/* Tooltip on hover */}
+              <div className="absolute left-full ml-2 px-3 py-1.5 rounded-lg whitespace-nowrap text-xs font-medium
+                opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-50"
+                style={{
+                  backgroundColor: 'var(--bg-elevated)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-strong)',
+                  boxShadow: 'var(--shadow-elevated)',
+                }}>
+                {link.label}
+              </div>
+            </NavLink>
+          )
+        })}
+
+        {/* Small divider */}
+        <div className="w-8 my-1 border-t" style={{ borderColor: 'var(--border-default)' }} />
+
+        {filteredSecondary.map((link) => {
+          const isActive = location.pathname === link.to
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              title={link.label}
+              className={`group relative flex items-center justify-center w-[44px] h-[44px] rounded-xl transition-all duration-200 ${isActive ? 'sidebar-secondary-active' : 'hover:bg-white/5'}`}
+              style={{ color: isActive ? 'var(--color-primary)' : 'var(--text-tertiary)' }}
+            >
+              <div
+                className="p-2 rounded-lg transition-all duration-200"
+                style={{
+                  backgroundColor: isActive ? 'color-mix(in srgb, var(--color-primary) 20%, transparent)' : 'transparent',
+                }}
+              >
+                <link.icon className="w-5 h-5" />
+              </div>
+              {/* Tooltip on hover */}
+              <div className="absolute left-full ml-2 px-3 py-1.5 rounded-lg whitespace-nowrap text-xs font-medium
+                opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-50"
+                style={{
+                  backgroundColor: 'var(--bg-elevated)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-strong)',
+                  boxShadow: 'var(--shadow-elevated)',
+                }}>
+                {link.label}
+              </div>
+            </NavLink>
+          )
+        })}
+      </nav>
+
+      {/* Toggle expand button */}
+      <div className="flex-shrink-0 border-t p-3 flex justify-center" style={{ borderColor: 'var(--border-default)' }}>
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 hover:bg-white/10"
+          style={{ color: 'var(--text-tertiary)' }}
+          title="Développer le menu"
+          aria-label="Développer le menu"
+        >
+          <FiChevronLeft className="w-5 h-5 rotate-180" />
+        </button>
+      </div>
+    </div>
+  )
+
+  // ─── Desktop: Expanded mode (full sidebar) ───
+  const renderDesktopExpanded = () => (
+    <div
+      className="flex flex-col h-full backdrop-blur-xl border-r transition-all duration-300"
+      style={{
+        backgroundColor: 'color-mix(in srgb, var(--bg-surface) 98%, transparent)',
+        borderColor: 'var(--border-default)',
+      }}
+    >
+      {/* Logo */}
+      <div className="flex-shrink-0 p-4 border-b flex items-center" style={{ borderColor: 'var(--border-default)' }}>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="w-9 h-9 min-w-[36px] rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
             <span className="text-white font-extrabold text-base">SF</span>
           </div>
@@ -87,15 +198,16 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
             <p className="text-[10px] leading-tight uppercase tracking-wider truncate" style={{ color: 'var(--text-tertiary)' }}>SOGEDIPROMA</p>
           </div>
         </div>
-        {isMobile && (
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            <FiX className="w-5 h-5" />
-          </button>
-        )}
+        {/* Collapse button */}
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="ml-2 p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
+          style={{ color: 'var(--text-tertiary)' }}
+          title="Réduire le menu"
+          aria-label="Réduire le menu"
+        >
+          <FiChevronLeft className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Navigation - Scrollable */}
@@ -110,7 +222,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
             <NavLink
               key={link.to}
               to={link.to}
-              onClick={() => isMobile && setSidebarOpen(false)}
               className={`sidebar-link group relative flex items-center gap-3 px-3 py-2.5 rounded-xl ${isActive ? 'sidebar-link-active' : ''}`}
               style={{ color: isActive ? undefined : 'var(--text-tertiary)' }}
             >
@@ -118,8 +229,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full"
                   style={{ backgroundColor: 'var(--color-primary)' }} />
               )}
-              <div className="sidebar-icon"
-                style={{ backgroundColor: isActive ? undefined : 'transparent' }}>
+              <div className="sidebar-icon" style={{ backgroundColor: isActive ? undefined : 'transparent' }}>
                 <link.icon className="w-4 h-4" />
               </div>
               <span className="text-sm font-medium truncate">{link.label}</span>
@@ -140,7 +250,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
             <NavLink
               key={link.to}
               to={link.to}
-              onClick={() => isMobile && setSidebarOpen(false)}
               className={`sidebar-secondary-link flex items-center gap-3 px-3 py-2.5 rounded-xl ${isActive ? 'sidebar-secondary-active' : ''}`}
               style={{ color: isActive ? undefined : 'var(--text-tertiary)' }}
             >
@@ -181,7 +290,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
                 <NavLink
                   key={mod.to}
                   to={mod.to}
-                  onClick={() => isMobile && setSidebarOpen(false)}
                   className={`group flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 ${
                     isActive
                       ? 'bg-gradient-to-r from-accent/15 to-transparent border-l-2 border-accent'
@@ -246,16 +354,19 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, isMobile }) {
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {sidebarContent}
+          {renderDesktopExpanded()}
         </div>
       </>
     )
   }
 
-  // ─── Desktop: fixed sidebar ───
+  // ─── Desktop: sticky sidebar ───
   return (
-    <div className="w-64 h-screen flex-shrink-0 sticky top-0">
-      {sidebarContent}
+    <div
+      className={`flex-shrink-0 h-screen sticky top-0 transition-all duration-300 ease-out`}
+      style={{ width: sidebarOpen ? '16rem' : '4.5rem' }}
+    >
+      {sidebarOpen ? renderDesktopExpanded() : renderDesktopCollapsed()}
     </div>
   )
 }
