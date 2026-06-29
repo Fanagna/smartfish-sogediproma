@@ -25,10 +25,12 @@ const getBateauById = async (id) => {
 };
 
 const createBateau = async (data) => {
+  const { capitaine, ...rest } = data;
   return await prisma.bateau.create({
     data: {
-      ...data,
-      carburantRestant: data.carburantCapacity || 500.0
+      ...rest,
+      capitaineNom: capitaine || null,
+      carburantRestant: rest.carburantCapacity || 500.0
     },
     include: {
       capitaine: {
@@ -39,9 +41,13 @@ const createBateau = async (data) => {
 };
 
 const updateBateau = async (id, data) => {
+  const { capitaine, ...rest } = data;
   return await prisma.bateau.update({
     where: { id: parseInt(id) },
-    data,
+    data: {
+      ...rest,
+      capitaineNom: capitaine || null
+    },
     include: {
       capitaine: {
         select: { id: true, nom: true, prenom: true }

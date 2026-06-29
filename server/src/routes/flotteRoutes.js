@@ -19,7 +19,7 @@ const bateauValidation = [
   body('immatriculation').trim().notEmpty().withMessage('Immatriculation est requise'),
   body('type').trim().notEmpty().withMessage('Type du bateau est requis'),
   body('longueur').isFloat({ min: 0 }).withMessage('Longueur doit être un nombre positif'),
-  body('capitaineId').isInt().withMessage('Capitaine est requis')
+  body('capitaine').trim().notEmpty().withMessage('Capitaine est requis')
 ];
 
 const carburantValidation = [

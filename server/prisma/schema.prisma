@@ -53,11 +53,12 @@ model Bateau {
   carburantCapacity Float     @default(500.0)
   carburantRestant  Float     @default(500.0)
   consoHoraire      Float?    // Consommation horaire (L/h) — saisie réelle du capitaine
-  capitaineId       Int
+  capitaineId       Int?
+  capitaineNom      String?   // Nom du capitaine en texte libre (quand pas lié à un User)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  capitaine   User      @relation(fields: [capitaineId], references: [id])
+  capitaine   User?     @relation(fields: [capitaineId], references: [id])
   captures    Capture[]
   stocks      Stock[]
   maintenance Maintenance[]

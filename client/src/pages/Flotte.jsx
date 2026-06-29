@@ -226,7 +226,7 @@ function RavitaillementModal({ isOpen, onClose, bateau }) {
   )
 }
 
-function BateauFormModal({ isOpen, onClose, bateau, capitaines = [] }) {
+function BateauFormModal({ isOpen, onClose, bateau }) {
   const queryClient = useQueryClient()
   const isEditing = !!bateau
   const createMutation = useMutation({
@@ -248,7 +248,7 @@ function BateauFormModal({ isOpen, onClose, bateau, capitaines = [] }) {
       longueur: parseFloat(f.get('longueur')),
       carburantCapacity: parseFloat(f.get('carburantCapacity')) || 500,
       consoHoraire: consoVal ? parseFloat(consoVal) : null,
-      capitaineId: parseInt(f.get('capitaineId'))
+      capitaine: f.get('capitaine')
     }
     if (isEditing) updateMutation.mutate(data); else createMutation.mutate(data)
   }
@@ -274,9 +274,9 @@ function BateauFormModal({ isOpen, onClose, bateau, capitaines = [] }) {
             <p className="text-[10px] text-theme-tertiary mt-0.5">Laissez vide pour estimation automatique</p>
           </div>
           <div><label className="block text-sm font-medium text-theme-secondary mb-1">Capitaine</label>
-            <select name="capitaineId" defaultValue={bateau?.capitaineId || ''} required className="w-full px-4 py-2.5 border border-theme-subtle rounded-lg focus:ring-2 focus:ring-accent outline-none">
-              <option value="">Sélectionner...</option>{capitaines.map(c => <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>)}
-            </select></div>
+            <input name="capitaine" type="text" defaultValue={bateau?.capitaineNom || (bateau?.capitaine ? `${bateau.capitaine.prenom} ${bateau.capitaine.nom}` : '')} required
+              placeholder="Nom du capitaine"
+              className="w-full px-4 py-2.5 border border-theme-subtle rounded-lg focus:ring-2 focus:ring-accent outline-none" /></div>
         </div>
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
@@ -371,6 +371,8 @@ export default function Flotte() {
 
   const capitaines = bateaux?.filter(b => b.capitaine).map(b => b.capitaine) || []
   const uniqueCapitaines = capitaines.filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i)
+  const uniqueCapitaineNoms = [...new Set(bateaux?.map(b => b.capitaineNom).filter(Boolean) || [])]
+  const totalCapitaines = uniqueCapitaines.length + uniqueCapitaineNoms.length
   const maintenancesList = maintenances?.predictions || []
 
   return (
@@ -415,7 +417,7 @@ export default function Flotte() {
         <Card variant="glass" className="!p-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-warning/10 rounded-xl"><FiUsers className="w-5 h-5 text-warning" /></div>
-            <div><p className="text-xs text-theme-secondary font-medium">Capitaines</p><p className="text-2xl font-bold text-warning">{uniqueCapitaines.length}</p></div>
+            <div><p className="text-xs text-theme-secondary font-medium">Capitaines</p><p className="text-2xl font-bold text-warning">{totalCapitaines}</p></div>
           </div>
         </Card>
       </div>
@@ -495,7 +497,7 @@ export default function Flotte() {
             </div>
             <div className="p-2 rounded-lg" style={{backgroundColor:'var(--bg-surface)'}}>
               <p className="text-xs text-theme-tertiary">Capitaine</p>
-              <p className="font-semibold text-theme-secondary text-sm truncate">{bateau.capitaine ? `${bateau.capitaine.prenom} ${bateau.capitaine.nom?.slice(0, 12)}` : '—'}</p>
+              <p className="font-semibold text-theme-secondary text-sm truncate">{(bateau.capitaineNom || (bateau.capitaine ? `${bateau.capitaine.prenom} ${bateau.capitaine.nom}`: null)) || '—'}</p>
             </div>
             <div className="p-2 rounded-lg" style={{backgroundColor:'var(--bg-surface)'}}>
               <div className="flex items-center gap-1">
@@ -569,7 +571,7 @@ export default function Flotte() {
       )}
 
       {/* Modals */}
-      <BateauFormModal isOpen={modalOpen} onClose={() => { setModalOpen(false); setEditingBateau(null) }} bateau={editingBateau} capitaines={uniqueCapitaines} />
+      <BateauFormModal isOpen={modalOpen} onClose={() => { setModalOpen(false); setEditingBateau(null) }} bateau={editingBateau} />
       <FuelModal isOpen={fuelModalOpen} onClose={() => { setFuelModalOpen(false); setFuelBateau(null) }} bateau={fuelBateau} action={fuelAction} />
       {ravitaillementBateau && (
         <RavitaillementModal isOpen={ravitaillementModalOpen} onClose={() => { setRavitaillementModalOpen(false); setRavitaillementBateau(null) }} bateau={ravitaillementBateau} />
