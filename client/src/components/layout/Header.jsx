@@ -22,6 +22,7 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
 
   const [socketConnected, setSocketConnected] = useState(false)
   const isReady = useRef(false)
+  const toastThrottle = useRef(false)
 
   const { data: notifData } = useQuery({
     queryKey: ['notifications-header'],
@@ -55,6 +56,11 @@ export default function Header({ sidebarOpen, setSidebarOpen, isMobile }) {
       // Invalider les caches React Query pour forcer le rafraîchissement
       queryClient.invalidateQueries({ queryKey: ['notifications-header'] })
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
+
+      // Throttle toast : max 1 toast toutes les 800ms pour éviter les conflits DOM
+      if (toastThrottle.current) return
+      toastThrottle.current = true
+      setTimeout(() => { toastThrottle.current = false }, 800)
 
       // Toast avec le message
       const typeStyles = {

@@ -1,19 +1,44 @@
 import { Component } from 'react'
 
 const MAX_RETRIES = 2
+const RELOAD_DELAY_MS = 3000
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props)
-    this.state = { hasError: false, error: null, retryCount: 0 }
+    this.state = { hasError: false, error: null, retryCount: 0, reloading: false, progress: 100 }
+    this.reloadTimer = null
+    this.progressTimer = null
   }
 
   static getDerivedStateFromError(error) {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error) {
     console.error('[ErrorBoundary] Erreur attrapée:', error.message)
+
+    // Auto-reload on DOM corruption errors - React can't recover
+    if (
+      !this.reloadTimer &&
+      error.name === 'NotFoundError' &&
+      (error.message.includes('removeChild') || error.message.includes('insertBefore'))
+    ) {
+      this.setState({ reloading: true, progress: 100 })
+      this.reloadTimer = setTimeout(() => {
+        window.location.reload()
+      }, RELOAD_DELAY_MS)
+      // Décrémente la barre de progression toutes les 100ms
+      const steps = RELOAD_DELAY_MS / 100
+      this.progressTimer = setInterval(() => {
+        this.setState(prev => ({ progress: Math.max(0, prev.progress - 100 / steps) }))
+      }, 100)
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.reloadTimer) clearTimeout(this.reloadTimer)
+    if (this.progressTimer) clearInterval(this.progressTimer)
   }
 
   handleReset = () => {
@@ -26,7 +51,9 @@ export default class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      const { retryCount } = this.state
+      const { retryCount, reloading, progress } = this.state
+      const isDomError = reloading
+
       return (
         <div style={{
           display: 'flex',
@@ -41,10 +68,14 @@ export default class ErrorBoundary extends Component {
           fontFamily: 'system-ui, sans-serif'
         }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-            {retryCount >= MAX_RETRIES ? '🔁' : '⚠️'}
+            {isDomError ? '🔄' : retryCount >= MAX_RETRIES ? '🔁' : '⚠️'}
           </div>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-            {retryCount >= MAX_RETRIES ? 'Erreur persistante' : 'Une erreur est survenue'}
+            {isDomError
+              ? 'Rechargement en cours...'
+              : retryCount >= MAX_RETRIES
+                ? 'Erreur persistante'
+                : 'Une erreur est survenue'}
           </h2>
           <p style={{
             fontSize: '0.875rem',
@@ -53,11 +84,29 @@ export default class ErrorBoundary extends Component {
             maxWidth: '420px',
             lineHeight: 1.5
           }}>
-            {retryCount >= MAX_RETRIES
-              ? 'L\'erreur persiste après plusieurs tentatives. Veuillez recharger la page pour réinitialiser l\'application.'
-              : 'L\'application a rencontré une erreur inattendue. Cliquez ci-dessous pour réessayer.'}
+            {isDomError
+              ? "L'application va être rechargée automatiquement..."
+              : retryCount >= MAX_RETRIES
+                ? "L'erreur persiste après plusieurs tentatives. Veuillez recharger la page."
+                : "L'application a rencontré une erreur inattendue. Cliquez ci-dessous pour réessayer."}
           </p>
-          {retryCount >= MAX_RETRIES ? (
+          {isDomError ? (
+            <div style={{
+              width: '200px',
+              height: '4px',
+              background: 'var(--border-default, #e5e7eb)',
+              borderRadius: '2px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${progress}%`,
+                height: '100%',
+                background: 'var(--color-primary, #6366f1)',
+                transition: 'width 100ms linear',
+                borderRadius: '2px'
+              }} />
+            </div>
+          ) : retryCount >= MAX_RETRIES ? (
             <button
               onClick={this.handleReload}
               style={{
