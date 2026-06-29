@@ -6,7 +6,7 @@ import Spinner from '../components/ui/Spinner'
 import Modal from '../components/ui/Modal'
 import { getOrdresMission, getOrdreMissionById, createOrdreMission, updateOrdreMission, deleteOrdreMission } from '../services/ordreMissionService'
 import { generateOrdreMissionPDF, printOrdreMission, nombreEnLettres, totalIndemnites } from '../utils/ordreMissionPDF'
-import { FiFileText, FiPlus, FiEdit2, FiTrash2, FiSearch, FiPrinter, FiDownload, FiSave, FiRotateCcw, FiEye, FiChevronLeft, FiChevronRight, FiUsers, FiPackage, FiDroplet, FiAnchor } from 'react-icons/fi'
+import { FiFileText, FiPlus, FiEdit2, FiTrash2, FiSearch, FiPrinter, FiDownload, FiSave, FiRotateCcw, FiEye, FiChevronLeft, FiChevronRight, FiUsers, FiPackage, FiDroplet, FiAnchor, FiCalendar, FiCheckCircle } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 
 // ── Constantes ──
@@ -338,6 +338,26 @@ export default function OrdreMission() {
 
   const totalIndem = totalIndemnites(form.equipage)
 
+  // ── Calcul des stats ──
+  const stats = {
+    total: pagination.total,
+    enCours: ordres.filter(o => {
+      if (!o.dateDepart || !o.dateArrivee) return false
+      const now = new Date()
+      const dep = new Date(o.dateDepart)
+      const arr = new Date(o.dateArrivee)
+      return now >= dep && now <= arr
+    }).length,
+    aVenir: ordres.filter(o => {
+      if (!o.dateDepart) return false
+      return new Date(o.dateDepart) > new Date()
+    }).length,
+    termines: ordres.filter(o => {
+      if (!o.dateArrivee) return false
+      return new Date(o.dateArrivee) < new Date()
+    }).length
+  }
+
   // ── Render: Liste ──
   if (mode === 'list') {
     return (
@@ -348,9 +368,43 @@ export default function OrdreMission() {
             <h1 className="text-3xl font-bold text-primary mb-1">Ordres de Mission</h1>
             <p className="text-theme-secondary">{pagination.total} ordre(s) de mission</p>
           </div>
-          <Button onClick={handleNew} className="flex items-center gap-2">
-            <FiPlus className="w-4 h-4" /> Nouvel Ordre de Mission
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={handleNew} className="flex items-center gap-2">
+              <FiPlus className="w-4 h-4" /> Nouvel Ordre de Mission
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Card variant="glass" className="!p-3 !pb-2.5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-xl"><FiFileText className="w-4 h-4 text-primary" /></div>
+              <div><p className="text-[10px] text-theme-tertiary uppercase tracking-wider">Total</p>
+                <p className="text-xl font-bold text-primary">{stats.total}</p></div>
+            </div>
+          </Card>
+          <Card variant="glass" className="!p-3 !pb-2.5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-accent/10 rounded-xl"><FiRotateCcw className="w-4 h-4 text-accent" /></div>
+              <div><p className="text-[10px] text-theme-tertiary uppercase tracking-wider">En cours</p>
+                <p className="text-xl font-bold text-accent">{stats.enCours}</p></div>
+            </div>
+          </Card>
+          <Card variant="glass" className="!p-3 !pb-2.5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-warning/10 rounded-xl"><FiCalendar className="w-4 h-4 text-warning" /></div>
+              <div><p className="text-[10px] text-theme-tertiary uppercase tracking-wider">À venir</p>
+                <p className="text-xl font-bold text-warning">{stats.aVenir}</p></div>
+            </div>
+          </Card>
+          <Card variant="glass" className="!p-3 !pb-2.5">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-success/10 rounded-xl"><FiCheckCircle className="w-4 h-4 text-success" /></div>
+              <div><p className="text-[10px] text-theme-tertiary uppercase tracking-wider">Terminés</p>
+                <p className="text-xl font-bold text-success">{stats.termines}</p></div>
+            </div>
+          </Card>
         </div>
 
         {/* Search */}

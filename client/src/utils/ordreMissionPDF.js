@@ -3,6 +3,8 @@
  * Utilise jspdf + jspdf-autotable pour produire un document formaté
  */
 
+import logoSrc from '../logo.jpg'
+
 let jsPDF, autoTableLoaded = false
 
 async function loadPdfLibs() {
@@ -11,6 +13,30 @@ async function loadPdfLibs() {
   await import('jspdf-autotable')
   jsPDF = jspdfModule.default
   autoTableLoaded = true
+}
+
+/**
+ * Charge et retourne le logo en format base64 pour le PDF
+ */
+function getLogoBase64() {
+  // The imported logo is a URL (either base64 data or path)
+  return logoSrc
+}
+
+/**
+ * Ajoute le logo dans le coin supérieur gauche du document
+ */
+function addLogoToDoc(doc, marginLeft, y) {
+  try {
+    const logoUrl = getLogoBase64()
+    const logoWidth = 22 // mm
+    const logoHeight = 22 // mm
+    doc.addImage(logoUrl, 'JPEG', marginLeft, y - 2, logoWidth, logoHeight)
+    return marginLeft + logoWidth + 5 // Return the x position after the logo
+  } catch (e) {
+    console.warn('Could not load logo for PDF:', e)
+    return marginLeft
+  }
 }
 
 /**
@@ -207,18 +233,27 @@ export async function generateOrdreMissionPDF(om) {
   // 1. EN-TÊTE
   // ════════════════════════════════════════════════════════════════
 
-  // Logo / Nom société
-  setFont('bold', 16)
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2])
-  doc.text('SMARTFISH SOGEDIPROMA', marginLeft, y)
-  y += 7
+  // ── Logo + En-tête société ──
+  const logoX = addLogoToDoc(doc, marginLeft, y + 10)
 
-  setFont('normal', 9)
+  // Texte à côté du logo
+  const textX = logoX + 3
+  setFont('bold', 18)
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2])
+  doc.text('SMARTFISH', textX, y + 3)
+  setFont('bold', 12)
+  doc.setTextColor(accentColor[0], accentColor[1], accentColor[2])
+  doc.text('SOGEDIPROMA', textX, y + 9)
+  y += 12
+
+  setFont('normal', 8)
   doc.setTextColor(100, 100, 100)
-  doc.text('Société de Gestion et de Développement des Produits Marins', marginLeft, y)
-  y += 5
-  doc.text('Tél: +261 34 XX XXX XX — Email: contact@smartfish.mg', marginLeft, y)
-  y += 5
+  doc.text('Société de Gestion et de Développement des Produits Marins', textX, y)
+  y += 4
+  doc.text('Tél: +261 34 XX XXX XX — Email: contact@smartfish.mg', textX, y)
+  y += 4
+  doc.text('Nosy Be — Madagascar', textX, y)
+  y += 6
 
   // Ligne de séparation
   y = addSeparator(y, primaryColor)
