@@ -24,8 +24,8 @@ const updateUserValidation = [
   body('password').optional().isLength({ min: 6 }).withMessage('Mot de passe doit contenir au moins 6 caractères')
 ];
 
-router.get('/', authenticateToken, getUsers);
-router.get('/:id', authenticateToken, getUserById);
+router.get('/', authenticateToken, authorizeRoles('ADMIN'), getUsers);
+router.get('/:id', authenticateToken, authorizeRoles('ADMIN'), getUserById);
 router.post('/', authenticateToken, authorizeRoles('ADMIN'), validate(createUserValidation), createUser);
 router.put('/:id', authenticateToken, authorizeRoles('ADMIN'), validate(updateUserValidation), updateUser);
 router.delete('/:id', authenticateToken, authorizeRoles('ADMIN'), deleteUser);

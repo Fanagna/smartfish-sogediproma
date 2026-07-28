@@ -228,7 +228,7 @@ export default function MaintenancePredictive() {
           <div>
             <h3 className="font-bold text-theme-primary mb-1">À propos d'IA4</h3>
             <p className="text-sm text-theme-secondary">
-              L'analyseur de maintenance prédictive utilise l'IA générative (Google Gemini 1.5 Flash) pour analyser
+              L'analyseur de maintenance prédictive analyse
               l'historique des maintenances et l'état des bateaux. Les prédictions identifient les risques de panne
               et recommandent des actions préventives avec leur niveau de priorité. Les maintenances haute priorité
               nécessitent une intervention immédiate.

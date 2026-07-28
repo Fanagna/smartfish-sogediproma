@@ -216,7 +216,7 @@ export default function RecommandationsDG() {
           <div>
             <h3 className="font-bold text-theme-primary mb-1">À propos d'IA14</h3>
             <p className="text-sm text-theme-secondary">
-              L'analyseur stratégique utilise l'IA générative (Google Gemini 1.5 Flash) pour produire des
+              L'analyseur stratégique produit des
               recommandations à long terme (3-12 mois) destinées au Directeur Général. Il analyse l'ensemble
               des données SmartFish pour proposer des axes de développement, une expansion géographique,
               une diversification des espèces et une optimisation financière.

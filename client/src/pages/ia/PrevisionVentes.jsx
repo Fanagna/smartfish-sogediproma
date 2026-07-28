@@ -244,7 +244,7 @@ export default function PrevisionVentes() {
           <div>
             <h3 className="font-bold text-theme-primary mb-1">À propos d'IA5</h3>
             <p className="text-sm text-theme-secondary">
-              L'analyseur de prévisions de ventes utilise l'IA générative (Google Gemini 1.5 Flash) pour analyser
+              L'analyseur de prévisions de ventes analyse
               les ventes passées et les stocks actuels. Les prévisions incluent les quantités estimées par espèce,
               le chiffre d'affaires attendu, les tendances (hausse/baisse/stable) et des recommandations
               personnalisées pour optimiser les ventes sur les 30 prochains jours.

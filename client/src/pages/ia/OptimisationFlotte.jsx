@@ -232,7 +232,7 @@ export default function OptimisationFlotte() {
           <div>
             <h3 className="font-bold text-theme-primary mb-1">À propos d'IA8</h3>
             <p className="text-sm text-theme-secondary">
-              L'optimiseur de flotte utilise l'IA générative (Google Gemini 1.5 Flash) pour analyser
+              L'optimiseur de flotte analyse
               les données des bateaux, captures, stocks et maintenances. Il priorise les bateaux à envoyer en mer,
               propose une répartition optimale des zones de pêche, et donne des conseils sur la gestion
               des équipages et du carburant.

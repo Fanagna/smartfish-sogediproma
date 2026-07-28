@@ -384,7 +384,7 @@ export default function StockIntelligence() {
             <h3 className="font-bold text-theme-primary mb-1">À propos</h3>
             <p className="text-sm text-theme-secondary">
               L'intelligence stock combine des algorithmes métier (détection de rupture par consommation réelle, analyse FIFO, calcul de rentabilité)
-              et l'IA générative Gemini pour produire des recommandations d'achat et de gestion personnalisées.
+              et l'IA pour produire des recommandations d'achat et de gestion personnalisées.
             </p>
           </div>
         </div>

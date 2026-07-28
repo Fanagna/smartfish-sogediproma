@@ -216,7 +216,7 @@ export default function PredictionsCaptures() {
           <div>
             <h3 className="font-bold text-theme-primary mb-1">À propos d'IA3</h3>
             <p className="text-sm text-theme-secondary">
-              L'analyseur de prédictions de captures utilise l'IA générative (Google Gemini 1.5 Flash) pour analyser
+              L'analyseur de prédictions de captures analyse
               les données historiques de captures et les stocks actuels. Les prédictions sont basées sur les tendances
               observées et les corrélations entre espèces. Les résultats sont mis à jour périodiquement.
             </p>

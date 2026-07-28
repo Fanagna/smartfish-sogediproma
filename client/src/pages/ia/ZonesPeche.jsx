@@ -424,7 +424,7 @@ export default function ZonesPeche() {
             <div className="flex gap-3 mt-2 text-[10px] text-theme-tertiary">
               <span>📍 {Object.keys(ZONE_COORDS).length} zones</span>
               <span>🌬️ Saison : {season.nom}</span>
-              <span>🤖 Analyse IA : Gemini</span>
+              <span>🤖 Analyse IA</span>
             </div>
           </div>
         </div>

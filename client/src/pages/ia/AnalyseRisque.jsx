@@ -196,7 +196,7 @@ export default function AnalyseRisque() {
       <Card variant="glass" className="!p-5">
         <div className="flex items-start gap-4">
           <div className="p-2.5 bg-red-500/10 rounded-xl shrink-0"><FiShield className="w-5 h-5 text-red-500" /></div>
-          <div><h3 className="font-bold text-theme-primary mb-1">À propos d'IA12</h3><p className="text-sm text-theme-secondary">Analyse les risques financiers, opérationnels et logistiques via Gemini 1.5 Flash. Chaque risque inclut probabilité, impact et recommandations d'atténuation.</p></div>
+          <div><h3 className="font-bold text-theme-primary mb-1">À propos d'IA12</h3><p className="text-sm text-theme-secondary">Analyse les risques financiers, opérationnels et logistiques par IA. Chaque risque inclut probabilité, impact et recommandations d'atténuation.</p></div>
         </div>
       </Card>
     </div>

@@ -195,7 +195,7 @@ export default function AnomaliesIA() {
       <Card variant="glass" className="!p-5">
         <div className="flex items-start gap-4">
           <div className="p-2.5 bg-danger/10 rounded-xl shrink-0"><FiCpu className="w-5 h-5 text-danger" /></div>
-          <div><h3 className="font-bold text-theme-primary mb-1">À propos d'IA9</h3><p className="text-sm text-theme-secondary">Détecteur d'anomalies opérationnelles utilisant Gemini 1.5 Flash. Analyse les captures, stocks, bateaux et maintenances pour détecter incohérences, niveaux critiques et maintenance overdue.</p></div>
+          <div><h3 className="font-bold text-theme-primary mb-1">À propos d'IA9</h3><p className="text-sm text-theme-secondary">Détecteur d'anomalies opérationnelles par IA. Analyse les captures, stocks, bateaux et maintenances pour détecter incohérences, niveaux critiques et maintenance overdue.</p></div>
         </div>
       </Card>
     </div>

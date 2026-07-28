@@ -247,7 +247,7 @@ export default function PrixMarche() {
           <div>
             <h3 className="font-bold text-theme-primary mb-1">À propos d'IA11</h3>
             <p className="text-sm text-theme-secondary">
-              L'analyseur de prix du marché utilise l'IA générative (Google Gemini 1.5 Flash) pour analyser
+              L'analyseur de prix du marché analyse
               les ventes passées et les stocks actuels. Les prévisions incluent les quantités estimées,
               le chiffre d'affaires attendu, les tendances (hausse/baisse/stable) et des recommandations
               personnalisées pour optimiser les ventes sur les 30 prochains jours.

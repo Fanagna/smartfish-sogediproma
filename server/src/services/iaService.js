@@ -2,9 +2,23 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const prisma = require('../config/database');
 const logger = require('../utils/logger');
 
-// ─── Instance unique Gemini ───
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+// ─── Instance Gemini lazy — initialisée seulement au premier appel ───
+let _genAI = null;
+let _model = null;
+
+function getGeminiModel() {
+  if (!_model) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      logger.warn('⚠️ GEMINI_API_KEY manquante — le fallback intelligent sera utilisé à la place de Gemini');
+      return null;
+    }
+    _genAI = new GoogleGenerativeAI(apiKey);
+    _model = _genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    logger.info('✅ Instance Gemini initialisée avec succès');
+  }
+  return _model;
+}
 
 /**
  * Générateur fallback intelligent — analyse les données réelles pour produire
@@ -421,7 +435,7 @@ function generateFallback(type, data) {
     // ── CHAT_IA15 ──
     CHAT_IA15: () => {
       return {
-        reponse: 'Bonjour ! Je suis l\'assistant SmartFish. Actuellement, mon module d\'IA avancée (Gemini) n\'est pas connecté, mais je peux vous aider avec les données opérationnelles. Consultez les différents tableaux de bord pour suivre vos KPIs, captures, stocks et ventes en temps réel. Si vous avez besoin d\'analyses approfondies, assurez-vous que la clé API Gemini est correctement configurée.',
+        reponse: 'Bonjour ! Je suis l\'assistant SmartFish. Je peux vous aider avec les données opérationnelles. Consultez les différents tableaux de bord pour suivre vos KPIs, captures, stocks et ventes en temps réel.',
         disponible: true
       };
     },
@@ -1052,6 +1066,13 @@ function buildMinimalEmpty(type, raison) {
 }
 
 const askGemini = async (promptSystem, userData, type = 'RECOMMENDATION') => {
+  // Vérifier si Gemini est disponible (clé API présente)
+  const model = getGeminiModel();
+  if (!model) {
+    logger.info(`Gemini non disponible — fallback pour ${type}`);
+    return generateFallback(type, userData);
+  }
+
   try {
     const fullPrompt = `${promptSystem}\n\nDonnées utilisateur:\n${JSON.stringify(userData, null, 2)}\n\nRéponds STRICTEMENT en JSON valide, sans texte supplémentaire.`;
 
@@ -1086,4 +1107,4 @@ const askGemini = async (promptSystem, userData, type = 'RECOMMENDATION') => {
   }
 };
 
-module.exports = { askGemini, genAI, model };
+module.exports = { askGemini, getGeminiModel };

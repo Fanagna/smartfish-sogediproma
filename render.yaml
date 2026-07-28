@@ -1,0 +1,59 @@
+# ─── SMARTFISH SOGEDIPROMA — Render Blueprint ───
+# Déploiement automatisé en 1 clic depuis GitHub
+# https://render.com/docs/blueprint-spec
+
+databases:
+  - name: smartfish-db
+    databaseName: smartfish
+    user: smartfish_user
+    plan: starter        # Plan gratuit (1 GB)
+    postgresMajorVersion: 16
+    ipAllowList: []      # Accès depuis Render uniquement
+
+services:
+  # ─── API Backend (Express + Prisma + Socket.io) ───
+  - type: web
+    name: smartfish-api
+    env: node
+    region: frankfurt
+    plan: starter
+    rootDir: server
+    buildCommand: npm install && npx prisma generate
+    startCommand: npx prisma migrate deploy && node src/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smartfish-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true    # Généré automatiquement
+      - key: CLIENT_URL
+        value: https://smartfish-client.onrender.com
+      - key: GEMINI_API_KEY
+        sync: false            # À renseigner manuellement si disponible
+
+  # ─── Frontend (React + Vite) ───
+  - type: web
+    name: smartfish-client
+    env: static
+    region: frankfurt
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://smartfish-api.onrender.com/api
+      - key: VITE_SOCKET_URL
+        value: https://smartfish-api.onrender.com

@@ -139,7 +139,7 @@ export default function ChatbotExecutif() {
             </div>
             <div className="mt-4 pt-3 border-t border-gray-100">
               <p className="text-[10px] text-theme-tertiary">
-                Les réponses sont générées par IA2 via Google Gemini 1.5 Flash avec les données temps réel de la base.
+                Les réponses sont générées par IA2 avec les données temps réel de la base SmartFish.
               </p>
             </div>
           </Card>
@@ -183,7 +183,7 @@ export default function ChatbotExecutif() {
                   {isSending ? <Spinner className="w-5 h-5 border-2 border-white/30 border-t-white" /> : <FiArrowUp className="w-5 h-5" />}
                 </button>
               </div>
-              <p className="text-[10px] text-theme-tertiary mt-2">L'assistant utilise Gemini 1.5 Flash — les réponses peuvent prendre quelques secondes</p>
+              <p className="text-[10px] text-theme-tertiary mt-2">L'assistant IA analyse les données — les réponses peuvent prendre quelques secondes</p>
             </div>
           </Card>
         </div>
@@ -196,7 +196,7 @@ export default function ChatbotExecutif() {
           <div>
             <h3 className="font-bold text-theme-primary mb-1">À propos d'IA2</h3>
             <p className="text-sm text-theme-secondary">
-              L'assistant exécutif conversationnel (IA15 / IA2) utilise Google Gemini 1.5 Flash pour répondre
+              L'assistant exécutif conversationnel (IA15 / IA2) répond
               à vos questions en langage naturel. Il a accès aux données temps réel de la base SmartFish :
               captures, stocks, bateaux, maintenances, ventes, exportations, anomalies et KPIs clés.
               Les 10 derniers échanges sont conservés pour assurer la continuité de la conversation.

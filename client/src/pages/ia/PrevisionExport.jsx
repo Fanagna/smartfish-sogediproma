@@ -285,7 +285,7 @@ export default function PrevisionExport() {
           <div>
             <h3 className="font-bold text-theme-primary mb-1">À propos d'IA6</h3>
             <p className="text-sm text-theme-secondary">
-              L'analyseur de prévisions d'exportation utilise l'IA générative (Google Gemini 1.5 Flash) pour analyser
+              L'analyseur de prévisions d'exportation analyse
               les exportations passées et les stocks actuels. Il identifie les marchés prometteurs, les espèces
               à fort potentiel et recommande les pays de destination stratégiques pour les 30 prochains jours.
             </p>

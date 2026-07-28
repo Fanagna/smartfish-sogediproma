@@ -39,6 +39,56 @@ import RecommandationsDG from './pages/ia/RecommandationsDG'
 import StockIntelligence from './pages/ia/StockIntelligence'
 import ZonesPeche from './pages/ia/ZonesPeche'
 
+// ─── Configuration centralisée des routes protégées ───
+// Chaque route peut optionnellement spécifier un tableau `roles` pour restreindre l'accès.
+// Si `roles` est absent, tout utilisateur authentifié peut accéder à la page.
+const dashboardRoutes = [
+  { path: '/dashboard', element: <Dashboard /> },
+  { path: '/dashboard-executif', element: <DashboardExecutif /> },
+  { path: '/dashboard-executif-avance', element: <DashboardExecutifAvance />, roles: ['ADMIN'] },
+  { path: '/dashboard-ia', element: <DashboardIA /> },
+  { path: '/dashboard-commercial', element: <DashboardCommercial />, roles: ['ADMIN', 'CAPITAINE'] },
+  { path: '/dashboard-durabilite', element: <DashboardDurabilite />, roles: ['ADMIN'] },
+  { path: '/dashboard-export', element: <DashboardExport />, roles: ['ADMIN'] },
+  { path: '/dashboard-operationnel', element: <DashboardOperationnel /> },
+]
+
+const gestionRoutes = [
+  { path: '/flotte', element: <Flotte /> },
+  { path: '/ordres-mission', element: <OrdreMission /> },
+  { path: '/captures', element: <Captures /> },
+  { path: '/stocks', element: <Stocks /> },
+  { path: '/anomalies', element: <Anomalies /> },
+  { path: '/clients', element: <Clients /> },
+  { path: '/achats-locaux', element: <AchatsLocaux /> },
+  { path: '/exportations', element: <Exportations /> },
+  { path: '/ventes-locales', element: <VentesLocales /> },
+  { path: '/cartographie', element: <Cartographie /> },
+  { path: '/users', element: <Users />, roles: ['ADMIN'] },
+]
+
+const iaRoutes = [
+  { path: '/ia/analyse-risque', element: <AnalyseRisque /> },
+  { path: '/ia/anomalies', element: <AnomaliesIA /> },
+  { path: '/ia/chatbot', element: <ChatbotExecutif /> },
+  { path: '/ia/detection-fraude', element: <DetectionFraude /> },
+  { path: '/ia/maintenance-predictive', element: <MaintenancePredictive /> },
+  { path: '/ia/optimisation-flotte', element: <OptimisationFlotte /> },
+  { path: '/ia/predictions-captures', element: <PredictionsCaptures /> },
+  { path: '/ia/prevision-export', element: <PrevisionExport /> },
+  { path: '/ia/prevision-ventes', element: <PrevisionVentes /> },
+  { path: '/ia/prix-marche', element: <PrixMarche /> },
+  { path: '/ia/rapports', element: <RapportsIA /> },
+  { path: '/ia/recommandations-dg', element: <RecommandationsDG /> },
+  { path: '/ia/stock-intelligence', element: <StockIntelligence /> },
+  { path: '/ia/zones-peche', element: <ZonesPeche /> },
+]
+
+// Helper : applique ProtectedRoute avec restriction de rôle si nécessaire
+const renderRoute = ({ path, element, roles }) => (
+  <Route key={path} path={path} element={roles ? <ProtectedRoute allowedRoles={roles}>{element}</ProtectedRoute> : element} />
+)
+
 function PublicRoute({ children }) {
   const { isAuthenticated } = useAuth()
   return isAuthenticated ? <Navigate to="/dashboard" /> : children
@@ -61,44 +111,9 @@ export default function App() {
           <ProtectedRoute>
             <Layout>
               <Routes>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dashboard-executif" element={<DashboardExecutif />} />
-                <Route path="/dashboard-executif-avance" element={<DashboardExecutifAvance />} />
-                <Route path="/dashboard-ia" element={<DashboardIA />} />
-                <Route path="/dashboard-commercial" element={<DashboardCommercial />} />
-                <Route path="/dashboard-durabilite" element={<DashboardDurabilite />} />
-                <Route path="/dashboard-export" element={<DashboardExport />} />
-                <Route path="/dashboard-operationnel" element={<DashboardOperationnel />} />
-
-                {/* Pages de gestion */}
-                <Route path="/flotte" element={<Flotte />} />
-                <Route path="/captures" element={<Captures />} />
-                <Route path="/stocks" element={<Stocks />} />
-                <Route path="/anomalies" element={<Anomalies />} />
-                <Route path="/clients" element={<Clients />} />
-                <Route path="/achats-locaux" element={<AchatsLocaux />} />
-                <Route path="/exportations" element={<Exportations />} />
-                <Route path="/ventes-locales" element={<VentesLocales />} />
-                <Route path="/cartographie" element={<Cartographie />} />
-                <Route path="/ordres-mission" element={<OrdreMission />} />
-                <Route path="/users" element={<Users />} />
-
-                {/* Pages IA (14 modules) */}
-                <Route path="/ia/analyse-risque" element={<AnalyseRisque />} />
-                <Route path="/ia/anomalies" element={<AnomaliesIA />} />
-                <Route path="/ia/chatbot" element={<ChatbotExecutif />} />
-                <Route path="/ia/detection-fraude" element={<DetectionFraude />} />
-                <Route path="/ia/maintenance-predictive" element={<MaintenancePredictive />} />
-                <Route path="/ia/optimisation-flotte" element={<OptimisationFlotte />} />
-                <Route path="/ia/predictions-captures" element={<PredictionsCaptures />} />
-                <Route path="/ia/prevision-export" element={<PrevisionExport />} />
-                <Route path="/ia/prevision-ventes" element={<PrevisionVentes />} />
-                <Route path="/ia/prix-marche" element={<PrixMarche />} />
-                <Route path="/ia/rapports" element={<RapportsIA />} />
-                <Route path="/ia/recommandations-dg" element={<RecommandationsDG />} />
-                <Route path="/ia/stock-intelligence" element={<StockIntelligence />} />
-                <Route path="/ia/zones-peche" element={<ZonesPeche />} />
-
+                {dashboardRoutes.map(renderRoute)}
+                {gestionRoutes.map(renderRoute)}
+                {iaRoutes.map(renderRoute)}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Layout>
