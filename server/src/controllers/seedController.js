@@ -1,7 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../config/database');
 const logger = require('../utils/logger');
 
-const prisma = new PrismaClient();
+let seedInProgress = false;
 
 /**
  * One-time seed endpoint
@@ -10,6 +10,11 @@ const prisma = new PrismaClient();
  */
 const seedDatabase = async (req, res) => {
   try {
+    // Éviter les appels simultanés
+    if (seedInProgress) {
+      return res.status(429).json({ error: 'Seed déjà en cours' });
+    }
+
     // Vérifier si la base a déjà des données (sécurité anti-double seed)
     const userCount = await prisma.user.count();
     
@@ -20,10 +25,8 @@ const seedDatabase = async (req, res) => {
       });
     }
 
+    seedInProgress = true;
     logger.info('🌱 Lancement du seed via endpoint API...');
-
-    // Exécuter le script de seed
-    const seedModule = require('../../prisma/seed');
     
     // Le seed.js s'exécute tout seul, mais on attends qu'il finisse
     // On utilise le même pattern que le fichier seed.js
@@ -223,6 +226,7 @@ const seedDatabase = async (req, res) => {
     await prisma.exportation.createMany({ data: exports });
     logger.info(`✅ ${exports.length} Exportations créées`);
 
+    seedInProgress = false;
     return res.json({
       success: true,
       message: '🌱 Base de données seedée avec succès !',
@@ -242,6 +246,7 @@ const seedDatabase = async (req, res) => {
       }
     });
   } catch (error) {
+    seedInProgress = false;
     logger.error(`❌ Erreur seed: ${error.message}`);
     return res.status(500).json({ error: `Erreur seed: ${error.message}` });
   }
