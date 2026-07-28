@@ -546,18 +546,14 @@ export default function Flotte() {
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-warning/10 text-warning rounded-xl hover:bg-warning/20 hover:shadow-lg hover:shadow-warning/10 transition-all duration-200 text-sm font-semibold">
                   <FiDroplet className="w-4 h-4" /> Utiliser
                 </button>
-                <button onClick={() => { setRavitaillementBateau(bateau); setRavitaillementModalOpen(true) }}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent/10 text-accent rounded-xl hover:bg-accent/20 hover:shadow-lg hover:shadow-accent/10 transition-all duration-200 text-sm font-semibold">
-                  <FiTruck className="w-4 h-4" /> Ravit.
-                </button>
                 <button onClick={() => { setEditingBateau(bateau); setModalOpen(true) }}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 hover:shadow-lg hover:shadow-primary/10 transition-all duration-200 text-sm font-semibold">
-                  <FiEdit2 className="w-4 h-4" /> Modifier
+                  className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all duration-200" title="Modifier">
+                  <FiEdit2 className="w-4 h-4" />
                 </button>
                 {user?.role === 'ADMIN' && (
                   <button onClick={() => setDeleteConfirm(bateau.id)}
-                    className="flex items-center justify-center gap-1.5 px-3 py-2 bg-danger/10 text-danger rounded-xl hover:bg-danger/20 hover:shadow-lg hover:shadow-danger/10 transition-all duration-200 text-sm font-semibold">
-                    <FiTrash2 className="w-4 h-4" /> Supprimer
+                    className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-all duration-200" title="Supprimer">
+                    <FiTrash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
