@@ -1,5 +1,7 @@
 # ─── SMARTFISH SOGEDIPROMA — Render Blueprint ───
 # Déploiement automatisé en 1 clic depuis GitHub
+# Frontend : https://smartfish-sogediproma.vercel.app (Vercel)
+# Backend  : Render Web Service + PostgreSQL
 # https://render.com/docs/blueprint-spec
 
 databases:
@@ -31,29 +33,6 @@ services:
       - key: JWT_SECRET
         generateValue: true    # Généré automatiquement
       - key: CLIENT_URL
-        value: https://smartfish-client.onrender.com
+        value: https://smartfish-sogediproma.vercel.app
       - key: GEMINI_API_KEY
         sync: false            # À renseigner manuellement si disponible
-
-  # ─── Frontend (React + Vite) ───
-  - type: web
-    name: smartfish-client
-    env: static
-    region: frankfurt
-    rootDir: client
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    pullRequestPreviewsEnabled: true
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        value: https://smartfish-api.onrender.com/api
-      - key: VITE_SOCKET_URL
-        value: https://smartfish-api.onrender.com
