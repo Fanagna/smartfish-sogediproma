@@ -15,6 +15,7 @@ const weatherRoutes = require('./weatherRoutes');
 const ordreMissionRoutes = require('./ordreMissionRoutes');
 const notificationRoutes = require('./notificationRoutes');
 const ravitaillementRoutes = require('./ravitaillementRoutes');
+const { seedDatabase } = require('../controllers/seedController');
 
 const router = express.Router();
 
@@ -34,5 +35,8 @@ router.use('/meteo', weatherRoutes);
 router.use('/ordres-mission', ordreMissionRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/ravitaillements', ravitaillementRoutes);
+
+// Route de seed unique (un seul appel possible)
+router.get('/seed', seedDatabase);
 
 module.exports = router;
