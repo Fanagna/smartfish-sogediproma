@@ -57,9 +57,15 @@ const updateBateau = async (id, data) => {
 };
 
 const deleteBateau = async (id) => {
-  return await prisma.bateau.delete({
-    where: { id: parseInt(id) }
-  });
+  const bateauId = parseInt(id);
+  // Supprimer d'abord les enregistrements liés (contrainte de clé étrangère)
+  await prisma.$transaction([
+    prisma.capture.deleteMany({ where: { bateauId } }),
+    prisma.stock.deleteMany({ where: { bateauId } }),
+    prisma.maintenance.deleteMany({ where: { bateauId } }),
+    prisma.ravitaillement.deleteMany({ where: { bateauId } }),
+    prisma.bateau.delete({ where: { id: bateauId } })
+  ]);
 };
 
 const utiliserCarburant = async (id, quantite) => {
