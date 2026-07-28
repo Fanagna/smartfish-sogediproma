@@ -8,6 +8,7 @@ import { getBateaux, createBateau, updateBateau, deleteBateau, utiliserCarburant
 import { getPredictionsMaintenance } from '../services/iaService'
 import { getRavitaillements, createRavitaillement, deleteRavitaillement } from '../services/ravitaillementService'
 import { FiAnchor, FiPlus, FiEdit2, FiTrash2, FiDroplet, FiUsers, FiNavigation, FiSettings, FiCalendar, FiAlertTriangle, FiCheckCircle, FiClock, FiDollarSign, FiTruck, FiX } from 'react-icons/fi'
+import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
 
 const TYPE_BATEAUX = ['Pêche côtière', 'Pêche hauturière', 'Thonier', 'Chalutier', 'Palangrier', 'Fileyeur', 'Caseyeur', 'Dragueur', 'Senneur', 'Polyvalent']
@@ -323,6 +324,7 @@ function FuelModal({ isOpen, onClose, bateau, action }) {
 }
 
 export default function Flotte() {
+  const { user } = useAuth()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingBateau, setEditingBateau] = useState(null)
   const [fuelModalOpen, setFuelModalOpen] = useState(false)
@@ -537,23 +539,27 @@ export default function Flotte() {
 
               <div className="flex items-center gap-2 border-t border-theme pt-4">
                 <button onClick={() => { setFuelBateau(bateau); setFuelAction('refill'); setFuelModalOpen(true) }}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-success/10 text-success rounded-lg hover:bg-success/20 transition-colors text-sm font-medium">
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-success/10 text-success rounded-xl hover:bg-success/20 hover:shadow-lg hover:shadow-success/10 transition-all duration-200 text-sm font-semibold">
                   <FiDroplet className="w-4 h-4" /> Remplir
                 </button>
                 <button onClick={() => { setFuelBateau(bateau); setFuelAction('use'); setFuelModalOpen(true) }}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-warning/10 text-warning rounded-lg hover:bg-warning/20 transition-colors text-sm font-medium">
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-warning/10 text-warning rounded-xl hover:bg-warning/20 hover:shadow-lg hover:shadow-warning/10 transition-all duration-200 text-sm font-semibold">
                   <FiDroplet className="w-4 h-4" /> Utiliser
                 </button>
                 <button onClick={() => { setRavitaillementBateau(bateau); setRavitaillementModalOpen(true) }}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent/10 text-accent rounded-lg hover:bg-accent/20 transition-colors text-sm font-medium">
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent/10 text-accent rounded-xl hover:bg-accent/20 hover:shadow-lg hover:shadow-accent/10 transition-all duration-200 text-sm font-semibold">
                   <FiTruck className="w-4 h-4" /> Ravit.
                 </button>
-                <button onClick={() => { setEditingBateau(bateau); setModalOpen(true) }} className="p-2 text-accent hover:bg-accent/10 rounded-lg" title="Modifier">
-                  <FiEdit2 className="w-4 h-4" />
+                <button onClick={() => { setEditingBateau(bateau); setModalOpen(true) }}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 hover:shadow-lg hover:shadow-primary/10 transition-all duration-200 text-sm font-semibold">
+                  <FiEdit2 className="w-4 h-4" /> Modifier
                 </button>
-                <button onClick={() => setDeleteConfirm(bateau.id)} className="p-2 text-danger hover:bg-danger/10 rounded-lg" title="Supprimer">
-                  <FiTrash2 className="w-4 h-4" />
-                </button>
+                {user?.role === 'ADMIN' && (
+                  <button onClick={() => setDeleteConfirm(bateau.id)}
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 bg-danger/10 text-danger rounded-xl hover:bg-danger/20 hover:shadow-lg hover:shadow-danger/10 transition-all duration-200 text-sm font-semibold">
+                    <FiTrash2 className="w-4 h-4" /> Supprimer
+                  </button>
+                )}
               </div>
             </Card>
           )
