@@ -18,6 +18,12 @@ const errorHandler = (err, req, res, next) => {
   } else if (err.code === 'P2002') {
     statusCode = 409;
     message = 'Cette valeur est déjà utilisée';
+  } else if (err.message === 'Email ou mot de passe incorrect') {
+    statusCode = 401;
+    message = err.message;
+  } else if (err.message === 'Utilisateur non trouvé') {
+    statusCode = 404;
+    message = err.message;
   }
 
   res.status(statusCode).json({
