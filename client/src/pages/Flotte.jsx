@@ -6,8 +6,7 @@ import Spinner from '../components/ui/Spinner'
 import Modal from '../components/ui/Modal'
 import { getBateaux, createBateau, updateBateau, deleteBateau, utiliserCarburant, remplirCarburant } from '../services/bateauService'
 import { getPredictionsMaintenance } from '../services/iaService'
-import { getRavitaillements, createRavitaillement, deleteRavitaillement } from '../services/ravitaillementService'
-import { FiAnchor, FiPlus, FiEdit2, FiTrash2, FiDroplet, FiUsers, FiNavigation, FiSettings, FiCalendar, FiAlertTriangle, FiCheckCircle, FiClock, FiDollarSign, FiTruck, FiX } from 'react-icons/fi'
+import { FiAnchor, FiPlus, FiEdit2, FiTrash2, FiDroplet, FiUsers, FiSettings, FiCalendar, FiAlertTriangle, FiCheckCircle, FiClock, FiDollarSign } from 'react-icons/fi'
 import { useAuth } from '../hooks/useAuth'
 import toast from 'react-hot-toast'
 
@@ -76,156 +75,6 @@ function CoutEstime({ restant, capacity, type, consoHoraire }) {
   )
 }
 
-function RavitaillementModal({ isOpen, onClose, bateau }) {
-  const queryClient = useQueryClient()
-  const [litres, setLitres] = useState('')
-  const [prixLitre, setPrixLitre] = useState('4800')
-  const [fournisseur, setFournisseur] = useState('')
-  const [notes, setNotes] = useState('')
-
-  const { data: ravitData, isLoading: loadingHisto } = useQuery({
-    queryKey: ['ravitaillements', bateau?.id],
-    queryFn: () => getRavitaillements(bateau.id),
-    enabled: isOpen && !!bateau?.id
-  })
-
-  const createMut = useMutation({
-    mutationFn: createRavitaillement,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ravitaillements', bateau?.id] })
-      queryClient.invalidateQueries({ queryKey: ['bateaux'] })
-      toast.success('Ravitaillement enregistré')
-      setLitres(''); setPrixLitre('4800'); setFournisseur(''); setNotes('')
-    },
-    onError: (err) => toast.error(err.response?.data?.error || 'Erreur')
-  })
-
-  const deleteMut = useMutation({
-    mutationFn: deleteRavitaillement,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ravitaillements', bateau?.id] })
-      queryClient.invalidateQueries({ queryKey: ['bateaux'] })
-      toast.success('Ravitaillement supprimé')
-    },
-    onError: (err) => toast.error(err.response?.data?.error || 'Erreur')
-  })
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const l = parseFloat(litres)
-    if (l <= 0) { toast.error('Quantité invalide'); return }
-    createMut.mutate({
-      bateauId: bateau.id,
-      litres: l,
-      prixLitre: parseFloat(prixLitre) || 4800,
-      fournisseur: fournisseur || undefined,
-      notes: notes || undefined
-    })
-  }
-
-  const ravitaillements = ravitData?.ravitaillements || []
-  const stats = ravitData?.stats
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Ravitaillement — ${bateau?.nom || ''}`} className="max-w-2xl">
-      <div className="space-y-6">
-        {/* Stats */}
-        {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3 rounded-xl bg-theme-surface">
-              <p className="text-[10px] text-theme-tertiary uppercase tracking-wider">Total ravitaillements</p>
-              <p className="text-xl font-bold text-primary">{stats.totalRavitaillements}</p>
-            </div>
-            <div className="p-3 rounded-xl bg-theme-surface">
-              <p className="text-[10px] text-theme-tertiary uppercase tracking-wider">Total litres</p>
-              <p className="text-xl font-bold text-accent">{stats.totalLitres.toFixed(0)} L</p>
-            </div>
-            <div className="p-3 rounded-xl bg-theme-surface">
-              <p className="text-[10px] text-theme-tertiary uppercase tracking-wider">Coût total</p>
-              <p className="text-xl font-bold text-warning">{stats.totalCout > 0 ? `${(stats.totalCout / 1000).toFixed(0)}k Ar` : '—'}</p>
-            </div>
-            <div className="p-3 rounded-xl bg-theme-surface">
-              <p className="text-[10px] text-theme-tertiary uppercase tracking-wider">Prix moyen/L</p>
-              <p className="text-xl font-bold text-theme-primary">{stats.coutMoyenLitre > 0 ? `${stats.coutMoyenLitre.toFixed(0)} Ar` : '—'}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Formulaire ajout */}
-        <form onSubmit={handleSubmit} className="bg-theme-surface rounded-xl p-4 space-y-3">
-          <h4 className="font-semibold text-sm text-theme-primary">Nouveau ravitaillement</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-theme-secondary mb-1">Litres</label>
-              <input type="number" step="1" min="1" required value={litres} onChange={e => setLitres(e.target.value)}
-                className="w-full px-3 py-2 border border-theme-subtle rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm" placeholder="100" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-theme-secondary mb-1">Prix/L (Ar)</label>
-              <input type="number" step="10" min="1" value={prixLitre} onChange={e => setPrixLitre(e.target.value)}
-                className="w-full px-3 py-2 border border-theme-subtle rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-theme-secondary mb-1">Fournisseur</label>
-              <input type="text" value={fournisseur} onChange={e => setFournisseur(e.target.value)}
-                className="w-full px-3 py-2 border border-theme-subtle rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm" placeholder="GALANA, JIRAMA..." />
-            </div>
-            <div className="flex items-end">
-              <Button type="submit" disabled={createMut.isPending} className="w-full">
-                {createMut.isPending ? '...' : 'Ajouter'}
-              </Button>
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-theme-secondary mb-1">Notes</label>
-            <input type="text" value={notes} onChange={e => setNotes(e.target.value)}
-              className="w-full px-3 py-2 border border-theme-subtle rounded-lg focus:ring-2 focus:ring-accent outline-none text-sm" placeholder="Optionnel" />
-          </div>
-        </form>
-
-        {/* Historique */}
-        <div>
-          <h4 className="font-semibold text-sm text-theme-primary mb-3">Historique des ravitaillements</h4>
-          {loadingHisto ? (
-            <div className="flex justify-center py-6"><Spinner className="w-6 h-6" /></div>
-          ) : ravitaillements.length > 0 ? (
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-              {ravitaillements.map(r => (
-                <div key={r.id} className="flex items-center justify-between p-3 rounded-xl bg-theme-surface hover:bg-theme-hover transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-success/10 rounded-lg">
-                      <FiDroplet className="w-4 h-4 text-success" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-theme-primary">{r.litres} L <span className="text-theme-tertiary font-normal">× {r.prixLitre} Ar/L</span></p>
-                      <p className="text-xs text-theme-secondary">{formatDate(r.date)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-warning">{(r.coutTotal / 1000).toFixed(0)}k Ar</p>
-                      {r.fournisseur && <p className="text-[10px] text-theme-tertiary">{r.fournisseur}</p>}
-                    </div>
-                    <button onClick={() => { if (confirm('Supprimer ce ravitaillement ?')) deleteMut.mutate(r.id) }}
-                      className="p-1.5 text-danger/60 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
-                      <FiX className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-theme-tertiary">
-              <FiTruck className="w-8 h-8 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">Aucun ravitaillement enregistré</p>
-              <p className="text-xs mt-1">Ajoutez votre premier ravitaillement ci-dessus</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </Modal>
-  )
-}
 
 function BateauFormModal({ isOpen, onClose, bateau }) {
   const queryClient = useQueryClient()
@@ -332,8 +181,6 @@ export default function Flotte() {
   const [fuelAction, setFuelAction] = useState('refill')
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [showMaintenance, setShowMaintenance] = useState(false)
-  const [ravitaillementModalOpen, setRavitaillementModalOpen] = useState(false)
-  const [ravitaillementBateau, setRavitaillementBateau] = useState(null)
   const queryClient = useQueryClient()
 
   const { data: bateaux, isLoading, isError, error } = useQuery({
@@ -575,9 +422,6 @@ export default function Flotte() {
       {/* Modals */}
       <BateauFormModal isOpen={modalOpen} onClose={() => { setModalOpen(false); setEditingBateau(null) }} bateau={editingBateau} />
       <FuelModal isOpen={fuelModalOpen} onClose={() => { setFuelModalOpen(false); setFuelBateau(null) }} bateau={fuelBateau} action={fuelAction} />
-      {ravitaillementBateau && (
-        <RavitaillementModal isOpen={ravitaillementModalOpen} onClose={() => { setRavitaillementModalOpen(false); setRavitaillementBateau(null) }} bateau={ravitaillementBateau} />
-      )}
       <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} title="Confirmer la suppression">
         <p className="text-theme-tertiary mb-6">Cette action est irréversible.</p>
         <div className="flex justify-end gap-3">
